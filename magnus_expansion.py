@@ -36,7 +36,7 @@ def magnus(get_At, t, k=1, integrator = euler_integrator, integrator_dt = 0.01):
     use the Magnus expansion approach to estimate U(t)"""
     U_0 = np.eye(2, dtype=complex)
 
-    Omega_t = 0
+    Omega_t = np.zeros((2,2), dtype=complex)
 
     for ki in range(1, k+1):
         if ki == 1:
