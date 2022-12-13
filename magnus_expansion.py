@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from scipy import linalg
 
 def get_At(t): # test function!
     E_0 = 1
@@ -45,5 +46,5 @@ def magnus(get_At, t, k=1, integrator = euler_integrator, integrator_dt = 0.01):
 
     # print(Omega_t)
     
-    answer = np.exp(Omega_t) * U_0
+    answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
