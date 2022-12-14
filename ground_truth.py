@@ -10,12 +10,14 @@ def get_Ht_test1(t):
     
     return E_0*np.eye(2, dtype = complex) + v_t*sigma_x
 
+
 def get_U_tplusdt(get_Ht, t, dt, U_t):
     """Takes: a function for calculating H at a t, a t, a dt size,
     and a value of U_t"""
     I = np.eye(2, dtype = complex)
     i = complex(0, 1)
     return np.matmul(I - i*get_Ht(t + 0.5*dt)*dt, U_t)
+
 
 def naive_simulation(get_Ht, T, dt):
     t = 0
