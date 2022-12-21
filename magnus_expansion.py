@@ -15,8 +15,7 @@ def get_At(t): # test function!
 
     # print(v_t.shape)
     # print(sigma_x.shape)
-    
-    return E_0*np.eye(2, dtype = complex) + v_t*sigma_x
+    return (0+-1j)*(E_0*np.eye(2, dtype = complex) + v_t*sigma_x)
 
 def euler_integrator(f, dt, t, t0 = 0):
     """Simple integrator taking f, dt, t, and optionally t0 = 0,
@@ -35,7 +34,7 @@ def euler_integrator(f, dt, t, t0 = 0):
 def euler_integrator2(f, dt, t, t0=0):
     s = 0
     t_max = t
-    t = dt / 2
+    t = dt / 2 
     while t < t_max:
         s += f(t) * dt
         t += dt / 2
@@ -112,8 +111,9 @@ def magnus(get_At, t, k=1, integrator = euler_integrator2, integrator_dt = 0.01)
             raise Exception("Magnus not implemented for k > 3")
 
     Omega_t = np.sum(Omega_t_ks, axis=0)
-    #print(Omega_t)
-    #print(Omega_t_ks)
-
+    
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
+
+# print("---")
+# print(magnus(get_At, 2, k=1))
