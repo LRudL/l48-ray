@@ -37,7 +37,7 @@ def euler_integrator2(f, dt, t, t0=0):
     t = t0 + dt / 2 
     while t < t_max:
         s += f(t) * dt
-        t += dt / 2
+        t += dt
     return s
 
 def generate_bernoulli(n):
