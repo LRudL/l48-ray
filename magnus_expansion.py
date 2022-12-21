@@ -72,10 +72,12 @@ def ad(k, Omega, A):
     else:
         return sqbrackets(Omega, ad(k - 1, Omega, A))
 
-def magnus(get_At, t, k=1, integrator = euler_integrator2, integrator_dt = 0.01):
+def magnus(get_Ht, t, k=1, integrator = euler_integrator2, integrator_dt = 0.01):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
     U_0 = np.eye(2, dtype=complex)
+
+    get_At = lambda t : (0-1j)*get_Ht(t)
 
     Omega_t = np.zeros((2,2), dtype=complex)
 
