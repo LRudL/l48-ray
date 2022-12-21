@@ -34,7 +34,7 @@ def euler_integrator(f, dt, t, t0 = 0):
 def euler_integrator2(f, dt, t, t0=0):
     s = 0
     t_max = t
-    t = dt / 2 
+    t = t0 + dt / 2 
     while t < t_max:
         s += f(t) * dt
         t += dt / 2
