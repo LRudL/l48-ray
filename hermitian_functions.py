@@ -7,9 +7,9 @@ def b_t(t):
 
 
 # 𝐻 = 𝐸_0 I_2 + 𝑏(𝑡)sigma_x
-def single_spin_qubit(t, E_0, b=b_t):
+def single_spin_qubit(t, E_0=1, b=b_t):
     sigma_x = np.matrix([[0 + 0j, 1 + 0j], [1 + 0j, 0 + 0j]])
-    return E_0 * np.eye(2, dtype=complex) + b_t(t) * sigma_x
+    return E_0 * np.eye(2, dtype=complex) + b(t) * sigma_x
 
 
 def two_spin_qubits(t, D, b = b_t):

@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy
 from scipy import linalg
 
 def get_At(t): # test function!

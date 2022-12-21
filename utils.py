@@ -7,7 +7,7 @@ def fidelity(U_tilde, U, n):
         Used to compare the intelligent evaluation result (Magnus expansion) U_tilde, to the ground truth from
         Euler integration of the Schrodinger equation U
     '''
-    return math.abs(1/n * np.matrix.trace(np.matrix.getH(U_tilde) @ U))**2
+    return abs(1/n * np.matrix.trace(np.matrix.getH(U_tilde) @ U))**2
 
 
 def hermitian(H):
