@@ -179,6 +179,11 @@ def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01)
             sum = np.sum(eta * (erf_ts - erf_ts_t))
             res = (0 - 1j) * H_0 * t + (0 - 1j) * V * A * sspi2 * sum
             Omega_t_ks.append(res)
+        elif ki == 2:
+            edelta = np.exp(-tstar**2 / 2 / s) - np.exp(-(tstar - t)**2 / 2 / s)
+            sum = np.sum(eta * (2 * s * edelta + sspi2 * (2 * tstar - t) * (erf_ts - erf_ts_t)))
+            res = A * sqbrackets(H_0, V) * sum
+            Omega_t_ks.append(res)
         else:
             raise Exception(f"Analytic Magnus not implemented for k={k}")
 
@@ -192,9 +197,9 @@ def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01)
 if __name__ == "__main__":
     print("---")
     print(magnus(
-        hermitian_functions.single_spin_qubit_system.at_t,
+        hermitian_functions.two_spin_qubit_system.at_t,
         t=1, k=1, integrator_dt=0.001))
     print("---")
     print(analytic_magnus(
-        hermitian_functions.single_spin_qubit_system.get_components(),
-        t=1, k=1, tstar_dt=0.001))
+        hermitian_functions.two_spin_qubit_system.get_components(),
+        t=1, k=2, tstar_dt=0.001))
