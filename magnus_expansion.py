@@ -87,7 +87,7 @@ def ad(k, Omega, A):
 def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
-
+    
     n = get_Ht(0).shape[0]
 
     U_0 = np.eye(n, dtype=complex)
@@ -190,7 +190,9 @@ def rbf(x, y):
 
 sigma_x = np.matrix([[0 + 0j, 1 + 0j], [1 + 0j, 0 + 0j]])
 
-print("---")
-print(magnus(single_spin_qubit, t=1, k=1, integrator_dt=0.001))
-print("---")
-print(analytic_magnus(np.eye(2, dtype=complex), b_t, sigma_x, rbf, t=1, k=1, tstar_dt=0.00998))
+
+if __name__ == "__main__":
+    print("---")
+    print(magnus(single_spin_qubit, t=1, k=1, integrator_dt=0.001))
+    print("---")
+    print(analytic_magnus(np.eye(2, dtype=complex), b_t, sigma_x, rbf, t=1, k=1, tstar_dt=0.00998))
