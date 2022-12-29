@@ -150,27 +150,16 @@ def analytic_magnus(H_0, get_vt, V, get_K, t, k=1, tstar_dt=0.01):
 
     Omega_t_ks = []
 
-    tstar = np.linspace(0, t, 101)  # TODO check if better with t / star_dt + 1
-    print("t_star:")
-    print(tstar)
+    tstar = np.linspace(0, t, 45)  # TODO check if better with t / star_dt + 1
     K_ts_ts = get_K(tstar[:, None], tstar[None, :])  # hack to evaluate over a 2d grid
-    print(f"K_starstar shape: {K_ts_ts.shape}")
     v_ts = get_vt(tstar)
-    print(f"v(t_star): {v_ts}")
     eta = np.linalg.solve(K_ts_ts, v_ts)
-    print(scipy.linalg.inv(K_ts_ts))
-    print(eta)
-    print(f"eta shape: {eta.shape}")
     erf_ts = scipy.special.erf(tstar / math.sqrt(2))
     erf_ts_t = scipy.special.erf((tstar - t) / math.sqrt(2))
-    # print("Error functions values at t_stars and shifted t_stars:")
-    # print(erf_ts)
-    # print(erf_ts_t)
 
     for ki in range(1, k + 1):
         if ki == 1:
             sum = np.sum(eta * (erf_ts - erf_ts_t))
-            print(f"Sum: {sum}")
             res = (0 - 1j) * H_0 * t + (0 - 1j) * V * math.sqrt(math.pi / 2) * sum
             Omega_t_ks.append(res)
         else:
@@ -193,8 +182,8 @@ def single_spin_qubit(t, E_0=1, b=b_t):
 
 
 def rbf(x, y):
-    return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
-
+    # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
+    return np.exp(-(x-y)**2 / 2)
 
 sigma_x = np.matrix([[0 + 0j, 1 + 0j], [1 + 0j, 0 + 0j]])
 
