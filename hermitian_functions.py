@@ -23,7 +23,7 @@ class ConstantMatrixHermitian:
 # HELPER FUNCTIONS / DEFINITIONS:
 
 def b_t(t):
-    return 0.5*math.exp(-(t-2.5)**2)
+    return 0.5*np.exp(-(t-2.5)**2)
 
 sigma_x = np.matrix([
     [0 + 0j, 1 + 0j],

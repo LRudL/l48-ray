@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import scipy
+import hermitian_functions
 from scipy import linalg
 from scipy import special
 
@@ -87,7 +88,7 @@ def ad(k, Omega, A):
 def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
-    
+
     n = get_Ht(0).shape[0]
 
     U_0 = np.eye(n, dtype=complex)
@@ -133,27 +134,29 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     return answer
 
 
-def analytic_magnus(H_0, get_vt, V, get_K, t, k=1, tstar_dt=0.01):
+def analytic_magnus(components, get_K, t, k=1, tstar_dt=0.01):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
     - the function is some sort of pulse that can be
     approximated as a Gaussian wave
-    - H(t) = H_0 + get_vt(t) V
+    - H(t) = H_0 + get_vt(t) V, and components is of the form
+      (H_0, get_vt, V), i.e. the same format that
+      .get_components on ConstantMatrixHermitian returns
     - we are modelling v(t) as a GP
     - the GP has covariance function get_K
     - in modelling the GP, we sample get_vt at intervals of tstar_dt
     - we are integrating up to term k of Magnus"""
 
+    H_0, get_vt, V = components
+
     n = H_0.shape[0]
     U_0 = np.eye(n, dtype=complex)
-
-    # get_At = lambda t : (0-1j)*(H_0 + get_vt(t) * V)
 
     Omega_t = np.zeros((n, n), dtype=complex)
 
     Omega_t_ks = []
 
-    tstar = np.linspace(0, t, 45)  # TODO check if better with t / star_dt + 1
+    tstar = np.linspace(0, t, int(t / tstar_dt))  # TODO check if better with t / star_dt + 1
     K_ts_ts = get_K(tstar[:, None], tstar[None, :])  # hack to evaluate over a 2d grid
     v_ts = get_vt(tstar)
     eta = np.linalg.solve(K_ts_ts, v_ts)
@@ -173,26 +176,16 @@ def analytic_magnus(H_0, get_vt, V, get_K, t, k=1, tstar_dt=0.01):
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
-
-def b_t(t):
-    return 0.5 * np.exp(-(t - 2.5) ** 2)
-
-
-# 𝐻 = 𝐸_0 I_2 + 𝑏(𝑡)sigma_x
-def single_spin_qubit(t, E_0=1, b=b_t):
-    sigma_x = np.matrix([[0 + 0j, 1 + 0j], [1 + 0j, 0 + 0j]])
-    return E_0 * np.eye(2, dtype=complex) + b(t) * sigma_x
-
-
 def rbf(x, y):
     # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
     return np.exp(-(x-y)**2 / 2)
 
-sigma_x = np.matrix([[0 + 0j, 1 + 0j], [1 + 0j, 0 + 0j]])
-
-
 if __name__ == "__main__":
     print("---")
-    print(magnus(single_spin_qubit, t=1, k=1, integrator_dt=0.001))
+    print(magnus(
+        hermitian_functions.single_spin_qubit_system.at_t,
+        t=1, k=1, integrator_dt=0.001))
     print("---")
-    print(analytic_magnus(np.eye(2, dtype=complex), b_t, sigma_x, rbf, t=1, k=1, tstar_dt=0.00998))
+    print(analytic_magnus(
+        hermitian_functions.single_spin_qubit_system.get_components(),
+        rbf, t=1, k=1, tstar_dt=0.00998))
