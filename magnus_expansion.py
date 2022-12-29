@@ -87,11 +87,14 @@ def ad(k, Omega, A):
 def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
-    U_0 = np.eye(2, dtype=complex)
+
+    n = get_Ht(0).shape[0]
+
+    U_0 = np.eye(n, dtype=complex)
 
     get_At = lambda t: (0 - 1j) * get_Ht(t)
 
-    Omega_t = np.zeros((2, 2), dtype=complex)
+    Omega_t = np.zeros((n, n), dtype=complex)
 
     Omega_t_ks = []
 
