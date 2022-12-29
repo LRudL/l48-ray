@@ -5,6 +5,9 @@ import hermitian_functions
 from scipy import linalg
 from scipy import special
 
+def rbf(x, y):
+    # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
+    return np.exp(-(x-y)**2 / 2)
 
 def get_At(t):  # test function!
     E_0 = 1
@@ -134,7 +137,7 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     return answer
 
 
-def analytic_magnus(components, get_K, t, k=1, tstar_dt=0.01):
+def analytic_magnus(components, t, get_K=rbf, k=1, tstar_dt=0.01):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
     - the function is some sort of pulse that can be
@@ -176,9 +179,7 @@ def analytic_magnus(components, get_K, t, k=1, tstar_dt=0.01):
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
-def rbf(x, y):
-    # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
-    return np.exp(-(x-y)**2 / 2)
+
 
 if __name__ == "__main__":
     print("---")
@@ -188,4 +189,4 @@ if __name__ == "__main__":
     print("---")
     print(analytic_magnus(
         hermitian_functions.single_spin_qubit_system.get_components(),
-        rbf, t=1, k=1, tstar_dt=0.00998))
+        t=1, k=1, tstar_dt=0.001))
