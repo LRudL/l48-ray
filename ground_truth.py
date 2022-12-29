@@ -12,7 +12,7 @@ def get_Ht_test1(t, E_0, b):
     return E_0*np.eye(2, dtype = complex) + v_t*sigma_x
 
 
-def get_U_tplusdt(get_Ht, t, dt, U_t, E_0, b):
+def get_U_tplusdt(get_Ht, t, dt, U_t, E_0, b, I_dim):
     """
     This function calculates the unitary U after time (t+dt) given U at time t
         @params:
@@ -24,12 +24,12 @@ def get_U_tplusdt(get_Ht, t, dt, U_t, E_0, b):
         @returns:
         U(t+dt): the value of U after a time step
     """
-    I = np.eye(2, dtype = complex)
+    I = np.eye(I_dim, dtype = complex)
     i = complex(0, 1)
     return np.matmul(I - i*get_Ht(t + 0.5*dt, E_0, b)*dt, U_t)
 
 
-def naive_simulation(get_Ht, T, dt, E_0 = 1, b=hermitian_functions.b_t,):
+def naive_simulation(get_Ht, T, dt, E_0 = 1, b=hermitian_functions.b_t, I = 2):
     '''
     This function returns the result of euler integration over time T
         @params
@@ -42,12 +42,12 @@ def naive_simulation(get_Ht, T, dt, E_0 = 1, b=hermitian_functions.b_t,):
     '''
     t = 0
     # U_0 is always I
-    U_t = np.eye(2, dtype=complex)
+    U_t = np.eye(I, dtype=complex)
 
     U_ts = []
 
     while (t < T):
-        U_t = get_U_tplusdt(get_Ht, t, dt, U_t, E_0, b)
+        U_t = get_U_tplusdt(get_Ht, t, dt, U_t, E_0, b, I)
         t += dt
         U_ts.append(U_t)
 
