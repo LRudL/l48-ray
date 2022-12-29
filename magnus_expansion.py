@@ -9,6 +9,9 @@ def rbf(x, y):
     # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
     return np.exp(-(x-y)**2 / 2)
 
+def get_rbf(s, A):
+    return lambda x, y : A * np.exp(- 1 / (2 * s) * (x-y)**2)
+
 def get_At(t):  # test function!
     E_0 = 1
     v_t = 0.5 * np.exp(-(t - 2.5) ** 2)
@@ -137,7 +140,7 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     return answer
 
 
-def analytic_magnus(components, t, get_K=rbf, k=1, tstar_dt=0.01):
+def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
     - the function is some sort of pulse that can be
@@ -146,11 +149,16 @@ def analytic_magnus(components, t, get_K=rbf, k=1, tstar_dt=0.01):
       (H_0, get_vt, V), i.e. the same format that
       .get_components on ConstantMatrixHermitian returns
     - we are modelling v(t) as a GP
-    - the GP has covariance function get_K
+    - the GP has an RBF covariance function, where the RBF is of form
+      rbf_C * np.exp(- 1 / (2 * s) * (x1 - x2)^2)
     - in modelling the GP, we sample get_vt at intervals of tstar_dt
     - we are integrating up to term k of Magnus"""
 
     H_0, get_vt, V = components
+
+    get_K = get_rbf(rbf_scale, rbf_C)
+    A = rbf_C
+    s = rbf_scale
 
     n = H_0.shape[0]
     U_0 = np.eye(n, dtype=complex)
@@ -163,13 +171,13 @@ def analytic_magnus(components, t, get_K=rbf, k=1, tstar_dt=0.01):
     K_ts_ts = get_K(tstar[:, None], tstar[None, :])  # hack to evaluate over a 2d grid
     v_ts = get_vt(tstar)
     eta = np.linalg.solve(K_ts_ts, v_ts)
-    erf_ts = scipy.special.erf(tstar / math.sqrt(2))
-    erf_ts_t = scipy.special.erf((tstar - t) / math.sqrt(2))
-
+    erf_ts = scipy.special.erf(tstar / math.sqrt(2 * s))
+    erf_ts_t = scipy.special.erf((tstar - t) / math.sqrt(2 * s))
+    sspi2 = math.sqrt(s * math.pi / 2)
     for ki in range(1, k + 1):
         if ki == 1:
             sum = np.sum(eta * (erf_ts - erf_ts_t))
-            res = (0 - 1j) * H_0 * t + (0 - 1j) * V * math.sqrt(math.pi / 2) * sum
+            res = (0 - 1j) * H_0 * t + (0 - 1j) * V * A * sspi2 * sum
             Omega_t_ks.append(res)
         else:
             raise Exception(f"Analytic Magnus not implemented for k={k}")
