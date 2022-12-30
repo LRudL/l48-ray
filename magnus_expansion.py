@@ -133,7 +133,7 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
 
         else:
             raise Exception("Magnus not implemented for k > 3")
-
+    print( "OMEGAS", Omega_t_ks, "\n")
     Omega_t = np.sum(Omega_t_ks, axis=0)
 
     answer = scipy.linalg.expm(Omega_t) @ U_0

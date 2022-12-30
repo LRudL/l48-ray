@@ -25,6 +25,10 @@ class ConstantMatrixHermitian:
 def b_t(t):
     return 0.5*np.exp(-(t-2.5)**2)
 
+
+def sin_t(t):
+    return math.sin(t)
+
 sigma_x = np.matrix([
     [0 + 0j, 1 + 0j],
     [1 + 0j, 0 + 0j]])
@@ -37,15 +41,20 @@ I_2 = np.eye(2, dtype=complex)
 
 single_spin_qubit_system = ConstantMatrixHermitian(I_2, b_t, sigma_x)
 
+alt_ssq_system = ConstantMatrixHermitian(sigma_x, b_t, sigma_z)
+
+alt_sin_ssq_system = ConstantMatrixHermitian(sigma_x, sin_t, sigma_z)
+
 two_spin_qubit_system = ConstantMatrixHermitian(
     np.kron(sigma_z, sigma_z),
     b_t,
-    np.kron(
-        sigma_x,
-        np.eye(2, dtype=complex))+ np.kron(np.eye(2, dtype=complex), sigma_x))
+    np.kron(sigma_x, np.eye(2, dtype=complex))
+        + np.kron(np.eye(2, dtype=complex), sigma_x))
 
 single_spin_qubit = single_spin_qubit_system.at_t
 two_spin_qubits = two_spin_qubit_system.at_t
+alt_ssq = alt_ssq_system.at_t
+alt_sin_ssq = alt_sin_ssq_system.at_t
 
 # # 𝐻 = 𝐸_0 I_2 + 𝑏(𝑡)sigma_x
 # def single_spin_qubit(t, E_0=1, b=b_t):

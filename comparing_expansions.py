@@ -30,12 +30,12 @@ def fidelity_over_n(U_tilde, U):
     plt.show()
 
 
-def fidelity_over_dts(k, ground_truth, hermitian):
-    dts = [0.01]
+def fidelity_over_dts(k, t, ground_truth, hermitian):
+    dts = [0.001]
     fidelities = []
     for dt in dts:
         print(dt)
-        magnus_Ut = magnus(hermitian, 5, k=k, integrator_dt=dt)
+        magnus_Ut = magnus(hermitian, t, k=k, integrator_dt=dt)
         print(magnus_Ut)
         fid = fidelity(magnus_Ut, ground_truth, len(magnus_Ut)).item(0,0)
         print(fid)
@@ -59,6 +59,8 @@ if __name__ == '__main__':
    5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
  [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
   -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]])
+    ground_truth_alt_sin, _ = naive_simulation(hermitian_functions.alt_sin_ssq, 2*math.pi, 0.000001)
+    print(ground_truth_alt_sin)
     # tsq, tsqs = naive_simulation(hermitian_functions.two_spin_qubits, 5, 0.000001)
     # product = tsq @ np.matrix.conj(tsq).T
     # print(tsq)
@@ -67,7 +69,7 @@ if __name__ == '__main__':
     # print("magnus \n", magnus_ssq_Ut)
     # print(fidelity(magnus_ssq_Ut, euler_ssq_Ut, len(euler_ssq_Ut)))
     # #fidelity_over_n(magnus_ssq_Ut, euler_ssq_Ut)
-    fidelity_over_dts(1, ground_truth_tsq, hermitian_functions.two_spin_qubits)
-    fidelity_over_dts(2, ground_truth_tsq, hermitian_functions.two_spin_qubits)
-    #fidelity_over_dts(3, ground_truth_tsq, hermitian_functions.two_spin_qubits)
+    fidelity_over_dts(1, 2*math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq)
+    fidelity_over_dts(2, 2*math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq)
+    fidelity_over_dts(3, 2*math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq)
 
