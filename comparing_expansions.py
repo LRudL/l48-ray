@@ -30,33 +30,44 @@ def fidelity_over_n(U_tilde, U):
     plt.show()
 
 
-def fidelity_over_dts(k, ground_truth):
-    dts = [0.03, 0.01, 0.003, 0.001]
+def fidelity_over_dts(k, ground_truth, hermitian):
+    dts = [0.01]
     fidelities = []
     for dt in dts:
         print(dt)
-        magnus_ssq_Ut = magnus(hermitian_functions.two_spin_qubits, 5, k=k, integrator_dt=dt)
-        print(type(ground_truth), type(magnus_ssq_Ut))
-        fidelities.append(fidelity(magnus_ssq_Ut, ground_truth, len(magnus_ssq_Ut)).item(0,0))
-    plt.plot(dts, fidelities)
-    plt.xlabel("dt")
-    plt.ylabel("Fidelity")
-    plt.xscale("log")
-    plt.title("Fidelity of naive magnus to naive euler over varying dt at omega order = " + str(k))
-    plt.show()
+        magnus_Ut = magnus(hermitian, 5, k=k, integrator_dt=dt)
+        print(magnus_Ut)
+        fid = fidelity(magnus_Ut, ground_truth, len(magnus_Ut)).item(0,0)
+        print(fid)
+        fidelities.append(fid)
+    # plt.plot(dts, fidelities)
+    # plt.xlabel("dt")
+    # plt.ylabel("Fidelity")
+    # plt.xscale("log")
+    # plt.title("Fidelity of naive magnus to naive euler over varying dt at omega order = " + str(k))
+    # plt.show()
 
 
 if __name__ == '__main__':
     ground_truth_ssq = np.matrix([[0.17945022+0.60663369j, 0.74265185-0.21968603j],
                             [0.74265185-0.21968603j, 0.17945022+0.60663369j]])
-    ground_truth_tsq,_ = np.matrix([[ 0.70404166+0.45647453j, -0.29595834+0.45647453j],
-                            [-0.29595834+0.45647453j,  0.70404166+0.45647453j]])
-    tsq, tsqs = naive_simulation(hermitian_functions.two_spin_qubits, 5, 0.00001, I = 4)
-    product = tsq @ np.matrix.conj(tsq).T
-    print(tsq)
-    print(product)
+    ground_truth_tsq = np.matrix([[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
+  -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
+ [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
+   2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
+ [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
+   5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
+ [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
+  -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]])
+    # tsq, tsqs = naive_simulation(hermitian_functions.two_spin_qubits, 5, 0.000001)
+    # product = tsq @ np.matrix.conj(tsq).T
+    # print(tsq)
+    # print(product)
     # magnus_ssq_Ut = magnus(hermitian_functions.single_spin_qubit, 5, k=2, integrator_dt = 0.001)
     # print("magnus \n", magnus_ssq_Ut)
     # print(fidelity(magnus_ssq_Ut, euler_ssq_Ut, len(euler_ssq_Ut)))
     # #fidelity_over_n(magnus_ssq_Ut, euler_ssq_Ut)
-    fidelity_over_dts(1, tsq)
+    fidelity_over_dts(1, ground_truth_tsq, hermitian_functions.two_spin_qubits)
+    fidelity_over_dts(2, ground_truth_tsq, hermitian_functions.two_spin_qubits)
+    #fidelity_over_dts(3, ground_truth_tsq, hermitian_functions.two_spin_qubits)
+
