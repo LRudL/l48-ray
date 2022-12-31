@@ -1,4 +1,6 @@
 import math
+from typing import Tuple
+
 import numpy as np
 
 
@@ -9,8 +11,8 @@ class ConstantMatrixHermitian:
         self.get_vt = get_vt
         self.V = V
 
-    def get_components(self):
-        return (self.H_0, self.get_vt, self.V)
+    def get_components(self) -> Tuple:
+        return self.H_0, self.get_vt, self.V
 
     def at_t(self, t, *args):
         # NOTE: this throws away all other args
@@ -31,15 +33,15 @@ def sin_t(t):
     return math.sin(t)
 
 
-sigma_x = np.matrix([
+sigma_x = np.array([
     [0 + 0j, 1 + 0j],
     [1 + 0j, 0 + 0j]])
 
-sigma_y = np.matrix([
+sigma_y = np.array([
     [0 + 0j, 0 - 1j],
     [0 + 1j, 0 + 0j]])
 
-sigma_z = np.matrix([
+sigma_z = np.array([
     [1 + 0j, 0 + 0j],
     [0 + 0j, -1 + 0j]])
 
