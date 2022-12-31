@@ -5,12 +5,14 @@ import hermitian_functions
 from scipy import linalg
 from scipy import special
 
+
 def rbf(x, y):
-    # return 1 / (8 * math.sqrt(math.pi)) * np.exp(- (x - y) ** 2 / 4)
-    return np.exp(-(x-y)**2 / 2)
+    return np.exp(-(x - y) ** 2 / 2)
+
 
 def get_rbf(s, A):
-    return lambda x, y : A * np.exp(- 1 / (2 * s) * (x-y)**2)
+    return lambda x, y: A * np.exp(- 1 / (2 * s) * (x - y) ** 2)
+
 
 def get_At(t):  # test function!
     E_0 = 1
@@ -91,7 +93,7 @@ def ad(k, Omega, A):
         return sqbrackets(Omega, ad(k - 1, Omega, A))
 
 
-def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
+def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01, verbose: bool = False):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
 
@@ -100,8 +102,6 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
     U_0 = np.eye(n, dtype=complex)
 
     get_At = lambda t: (0 - 1j) * get_Ht(t)
-
-    Omega_t = np.zeros((n, n), dtype=complex)
 
     Omega_t_ks = []
 
@@ -133,14 +133,19 @@ def magnus(get_Ht, t, k=1, integrator=euler_integrator2, integrator_dt=0.01):
 
         else:
             raise Exception("Magnus not implemented for k > 3")
-    print( "OMEGAS", Omega_t_ks, "\n")
+
+    if verbose:
+        print("Omega matrices:")
+        for k, omega_k in enumerate(Omega_t_ks):
+            print(f'Omega {k + 1}:\n{omega_k}')
+
     Omega_t = np.sum(Omega_t_ks, axis=0)
 
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
 
-def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01):
+def analytic_magnus(components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
     - the function is some sort of pulse that can be
@@ -180,7 +185,7 @@ def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01)
             res = (0 - 1j) * H_0 * t + (0 - 1j) * V * A * sspi2 * sum
             Omega_t_ks.append(res)
         elif ki == 2:
-            edelta = np.exp(-tstar**2 / 2 / s) - np.exp(-(tstar - t)**2 / 2 / s)
+            edelta = np.exp(-tstar ** 2 / 2 / s) - np.exp(-(tstar - t) ** 2 / 2 / s)
             sum = np.sum(eta * (2 * s * edelta + sspi2 * (2 * tstar - t) * (erf_ts - erf_ts_t)))
             res = A * sqbrackets(H_0, V) * sum
             Omega_t_ks.append(res)
@@ -191,7 +196,6 @@ def analytic_magnus(components, t, rbf_scale = 1, rbf_C = 1, k=1, tstar_dt=0.01)
 
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
-
 
 
 if __name__ == "__main__":
