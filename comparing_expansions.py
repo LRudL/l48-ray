@@ -22,12 +22,13 @@ def fidelity_over_dts(max_omega, max_t, ground_truth, hermitian, dts: list, verb
 
 
 if __name__ == '__main__':
-    ground_truth_alt_sin, _ = naive_simulation(hermitian_functions.alt_sin_ssq, 2 * math.pi, 0.0001)
+    max_t = 2.
+    ground_truth_alt_sin, _ = naive_simulation(hermitian_functions.alt_sin_ssq, max_t, 0.0001)
     # ground_truth_alt_sin = np.array([[-0.02379359 - 1.29625832e-07j, -0.18683116 - 9.82108654e-01j],
     #                                  [0.18683116 - 9.82108654e-01j, -0.02379359 + 1.29625851e-07j]])
     print(ground_truth_alt_sin)
 
     dts = [5e-2]
-    fidelity_over_dts(1, 2 * math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
-    fidelity_over_dts(2, 2 * math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
-    fidelity_over_dts(3, 2 * math.pi, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
+    fidelity_over_dts(1, max_t, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
+    fidelity_over_dts(2, max_t, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
+    fidelity_over_dts(3, max_t, ground_truth_alt_sin, hermitian_functions.alt_sin_ssq, dts)
