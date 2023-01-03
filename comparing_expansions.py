@@ -13,7 +13,7 @@ def fidelity_over_dts(max_omega, max_t, ground_truth, hermitian, dts: list, verb
             print(f'Simulating dt={dt:.1e}')
 
         magnus_propagator = magnus(hermitian, max_t, k=max_omega, integrator_dt=dt, verbose=verbose)
-        fid = fidelity(magnus_propagator, ground_truth, len(magnus_propagator))
+        fid = fidelity(magnus_propagator, ground_truth)
         fidelities.append(fid)
 
         if verbose:
