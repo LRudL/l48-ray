@@ -5,6 +5,8 @@ import hermitian_functions
 from scipy import linalg
 from scipy import special
 
+from utils import fidelity
+
 
 def rbf(x, y):
     return np.exp(-(x - y) ** 2 / 2)
@@ -104,33 +106,34 @@ def segmented_handler(callback, t, segment_margin, sample, verbose):
         t_start += max_dt
     if verbose:
         # for i, Ut in enumerate(Uts):
-            # print(f"Segment matrix {i}:")
-            # print(Ut)
+        # print(f"Segment matrix {i}:")
+        # print(Ut)
         print(f"Divided section into {len(Uts)} segments")
     prod = np.eye(Uts[0].shape[0])
     for Ut in Uts:
         prod = Ut @ prod
     return prod
 
+
 def magnus(
-    get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01,
-    t_start = 0, segmented = False, segment_margin = 3,
-    verbose: bool = False
+        get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01,
+        t_start=0, segmented=False, segment_margin=3,
+        verbose: bool = False
 ):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
-    
+
     get_Ht = get_Ht_
     if t_start != 0:
-        get_Ht = lambda t : get_Ht_(t + t_start)
+        get_Ht = lambda t: get_Ht_(t + t_start)
         t = t - t_start
     # from this point onwards, it is as if the range is [0, t],
     # even if it originally was [t_start, t]
 
     if segmented:
-        sample = -(0+1j) * get_Ht(t/2)
-        
-        callback = lambda t_start, t : magnus(
+        sample = -(0 + 1j) * get_Ht(t / 2)
+
+        callback = lambda t_start, t: magnus(
             get_Ht, t, k, integrator, integrator_dt,
             t_start, False, segment_margin,
             verbose
@@ -187,10 +190,10 @@ def magnus(
 
 
 def analytic_magnus(
-    components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01,
-    segmented = False, segment_margin = 3,
-    t_start = 0,
-    verbose = False
+        components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01,
+        segmented=False, segment_margin=3,
+        t_start=0,
+        verbose=False
 ):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
@@ -211,7 +214,7 @@ def analytic_magnus(
     H_0, get_vt_, V = components
     get_vt = get_vt_
     if t_start != 0:
-        get_vt = lambda t : get_vt_(t + t_start)
+        get_vt = lambda t: get_vt_(t + t_start)
         t = t - t_start
     # from this point onwards, it is as if the range is [0, t],
     # even if it originally was [t_start, t]
@@ -219,11 +222,11 @@ def analytic_magnus(
     get_K = get_rbf(rbf_scale, rbf_C)
 
     if segmented:
-        sample = -(0+1j) * (H_0 + get_vt(t/2) * V)
-        
-        callback = lambda t_start, t : analytic_magnus(
+        sample = -(0 + 1j) * (H_0 + get_vt(t / 2) * V)
+
+        callback = lambda t_start, t: analytic_magnus(
             components, t, rbf_scale, rbf_C, k, tstar_dt, False, segment_margin,
-            t_start = t_start
+            t_start=t_start
         )
 
         return segmented_handler(callback, t, segment_margin, sample, verbose=verbose)
@@ -233,8 +236,6 @@ def analytic_magnus(
 
     n = H_0.shape[0]
     U_0 = np.eye(n, dtype=complex)
-
-    Omega_t = np.zeros((n, n), dtype=complex)
 
     Omega_t_ks = []
 
@@ -265,21 +266,22 @@ def analytic_magnus(
 
 
 if __name__ == "__main__":
+    gt = [[-0.33209122 + 0.85422037j, 0.13487262 - 0.07334723j, 0.13487262 - 0.07334723j, 0.32155371 + 0.09741636j],
+          [-0.13487262 - 0.07334723j, - 0.33209122 - 0.85422037j, 0.32155371 - 0.09741636j, - 0.13487262 - 0.07334723j],
+          [-0.13487262 - 0.07334723j, 0.32155371 - 0.09741636j, - 0.33209122 - 0.85422037j, - 0.13487262 - 0.07334723j],
+          [0.32155371 + 0.09741636j, 0.13487262 - 0.07334723j, 0.13487262 - 0.07334723j, - 0.33209122 + 0.85422037j]]
+
     print("---Magnus, non-segmented:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=1, integrator_dt=0.004))
+    m_ns = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=4, k=1, integrator_dt=0.004)
+    print(f'Fid: {fidelity(m_ns, gt):.4f}')
     print("---Magnus, segmented:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=1, integrator_dt=0.004, segmented=True))
+    m_s = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=4, k=1, integrator_dt=0.004, segmented=True)
+    print(f'Fid: {fidelity(m_s, gt):.4f}')
     print("---Analytic Magnus:")
-    print(analytic_magnus(
-        hermitian_functions.two_spin_qubit_system.get_components(),
-        t=4, k=2, tstar_dt=0.004,
-        segmented=False, verbose=True))
+    am_ns = analytic_magnus(hermitian_functions.two_spin_qubit_system.get_components(), t=4, k=2, tstar_dt=0.004,
+                            segmented=False, verbose=True)
+    print(f'Fid: {fidelity(am_ns, gt):.4f}')
     print("---Analytic Magnus, segmented:")
-    print(analytic_magnus(
-        hermitian_functions.two_spin_qubit_system.get_components(),
-        t=4, k=2, tstar_dt=0.004,
-        segmented=True, verbose=True))
+    am_s = analytic_magnus(hermitian_functions.two_spin_qubit_system.get_components(), t=4, k=2, tstar_dt=0.004,
+                           segmented=True, verbose=True)
+    print(f'Fid: {fidelity(am_s, gt):.4f}')
