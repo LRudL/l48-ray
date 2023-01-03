@@ -2,12 +2,15 @@ import math
 import numpy as np
 
 
-def fidelity(U_tilde, U, n):
+def fidelity(U_tilde, U):
     '''
         Used to compare the intelligent evaluation result (Magnus expansion) U_tilde, to the ground truth from
         Euler integration of the Schrodinger equation U
     '''
-    return abs(1/n * np.matrix.trace(np.matrix.getH(U_tilde) @ U))**2
+    U_tilde, U = np.array(U_tilde), np.array(U)
+    n = U.shape[0]
+    assert U.shape == U_tilde.shape, 'Error: matrices must have same dimensions!'
+    return abs(1 / n * np.matrix.trace(np.matrix.getH(U_tilde) @ U)) ** 2
 
 
 def hermitian(H):
@@ -24,4 +27,4 @@ def unitary(U):
     '''
     U_conj_trans = np.matrix.conj(U).T
     product = U @ U_conj_trans
-    return np.isclose(product, np.eye(len(product), dtype = complex)).all()
+    return np.isclose(product, np.eye(len(product), dtype=complex)).all()
