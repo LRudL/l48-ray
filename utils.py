@@ -10,6 +10,24 @@ def fidelity(U_tilde, U, n):
     return abs(1/n * np.matrix.trace(np.matrix.getH(U_tilde) @ U))**2
 
 
+def get_singular_A(A):
+    M = np.matrix.conj(A).T @ A
+    eigenvalues, _ = np.linalg.eig(M)
+    max_eig = np.max(eigenvalues)
+    return np.sqrt(max_eig)
+
+
+def magnus_convergence(get_Ht, T):
+    ds = 0.0001
+    integral = 0
+    s = 0
+    while s < T:
+        integral += get_singular_A(get_Ht(s))*ds
+        s += ds
+    print(integral)
+    return integral < math.pi
+
+
 def hermitian(H):
     '''
         Tests whether matrix H is Hermitian
