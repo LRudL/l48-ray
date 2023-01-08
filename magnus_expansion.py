@@ -113,13 +113,16 @@ def segmented_handler(callback, t, segment_margin, sample, verbose):
     return prod
 
 def magnus(
-    get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01,
+    get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01, dt=None,
     t_start = 0, segmented = False, segment_margin = 3,
     verbose: bool = False
 ):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
-    
+    if isinstance(get_Ht_, hermitian_functions.ConstantMatrixHermitian):
+        get_Ht_ = get_Ht_.at_t
+    if dt is not None:
+        integrator_dt = dt
     get_Ht = get_Ht_
     if t_start != 0:
         get_Ht = lambda t : get_Ht_(t + t_start)
@@ -131,7 +134,7 @@ def magnus(
         sample = -(0+1j) * get_Ht(t/2)
         
         callback = lambda t_start, t : magnus(
-            get_Ht, t, k, integrator, integrator_dt,
+            get_Ht, t, k, integrator, integrator_dt, integrator_dt,
             t_start, False, segment_margin,
             verbose
         )
@@ -180,14 +183,16 @@ def magnus(
         for k, omega_k in enumerate(Omega_t_ks):
             print(f'Omega {k + 1}:\n{omega_k}')
 
+    # print(Omega_t_ks)
     Omega_t = np.sum(Omega_t_ks, axis=0)
+    # print(Omega_t)
 
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
 
 def analytic_magnus(
-    components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01,
+    components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01, dt=None,
     segmented = False, segment_margin = 3,
     t_start = 0,
     verbose = False
@@ -207,6 +212,11 @@ def analytic_magnus(
     
     IF MODIFYING SIGNATURE: note that for segmentation to work properly, you must
     also pass additional things into the definition of the callback variable below"""
+    if dt is not None:
+        tstar_dt = dt
+    
+    if isinstance(components, hermitian_functions.ConstantMatrixHermitian):
+        components = components.get_components()
 
     H_0, get_vt_, V = components
     get_vt = get_vt_
@@ -222,7 +232,7 @@ def analytic_magnus(
         sample = -(0+1j) * (H_0 + get_vt(t/2) * V)
         
         callback = lambda t_start, t : analytic_magnus(
-            components, t, rbf_scale, rbf_C, k, tstar_dt, False, segment_margin,
+            components, t, rbf_scale, rbf_C, k, tstar_dt, tstar_dt, False, segment_margin,
             t_start = t_start
         )
 
