@@ -275,21 +275,39 @@ def analytic_magnus(
 
 
 if __name__ == "__main__":
-    print("---Magnus, non-segmented:")
+    
+    # print("---Magnus, non-segmented:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=4, k=1, integrator_dt=0.004))
+    # print("---Magnus, segmented:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=4, k=1, integrator_dt=0.004, segmented=True))
+    # print("---Analytic Magnus:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system.get_components(),
+    #     t=4, k=2, tstar_dt=0.004,
+    #     segmented=False, verbose=True))
+    # print("---Analytic Magnus, segmented:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system.get_components(),
+    #     t=4, k=2, tstar_dt=0.004,
+    #     segmented=True, verbose=True))
+
+    print("---Magnus, non-segmented, k=2:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=1, integrator_dt=0.004))
-    print("---Magnus, segmented:")
+        t=4, k=1, integrator_dt=0.04))
+    print("---Magnus, non-segmented, k=3:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=1, integrator_dt=0.004, segmented=True))
-    print("---Analytic Magnus:")
-    print(analytic_magnus(
-        hermitian_functions.two_spin_qubit_system.get_components(),
-        t=4, k=2, tstar_dt=0.004,
-        segmented=False, verbose=True))
-    print("---Analytic Magnus, segmented:")
-    print(analytic_magnus(
-        hermitian_functions.two_spin_qubit_system.get_components(),
-        t=4, k=2, tstar_dt=0.004,
-        segmented=True, verbose=True))
+        t=4, k=2, integrator_dt=0.04))
+    print("---Magnus, segmented, k=2:")
+    print(magnus(
+        hermitian_functions.two_spin_qubit_system.at_t,
+        t=4, k=2, integrator_dt=0.04, segmented=True))
+    print("---Magnus, segmented, k=3:")
+    print(magnus(
+        hermitian_functions.two_spin_qubit_system.at_t,
+        t=4, k=3, integrator_dt=0.04, segmented=True))
