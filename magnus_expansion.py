@@ -5,6 +5,7 @@ import hermitian_functions
 from scipy import linalg
 from scipy import special
 
+import ground_truth
 
 def rbf(x, y):
     return np.exp(-(x - y) ** 2 / 2)
@@ -119,6 +120,9 @@ def magnus(
 ):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
+
+    print(f"Calling magnus with k={k}, integrator_dt={integrator_dt}, dt={dt}, segmented={segmented}, range={t_start} to {t}")
+
     if isinstance(get_Ht_, hermitian_functions.ConstantMatrixHermitian):
         get_Ht_ = get_Ht_.at_t
     if dt is not None:
@@ -174,6 +178,9 @@ def magnus(
                                                                                integrator_dt, t2, 0),
                                                          integrator_dt, t1, 0),
                                    integrator_dt, t, 0))
+            print("The final value of Omega3:")
+            print(Omega_t_ks[-1])
+            print("------------------------------------------")
 
         else:
             raise Exception("Magnus not implemented for k > 3")
@@ -309,19 +316,38 @@ if __name__ == "__main__":
     #     t=4, k=2, tstar_dt=0.004,
     #     segmented=True, verbose=True))
 
-    print("---Magnus, non-segmented, k=2:")
+    print("\n\n---Naive::")
+    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start = 0, t=1, dt=0.001))
+    print("\n\n---Magnus, non-segmented, k=2:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=1, integrator_dt=0.04))
-    print("---Magnus, non-segmented, k=3:")
+        t=1, k=2, integrator_dt=0.04))
+    print("\n\n---Magnus, non-segmented, k=3:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=2, integrator_dt=0.04))
-    print("---Magnus, segmented, k=2:")
+        t=1, k=3, integrator_dt=0.04))
+    print("\n\n---Magnus, segmented, k=2:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=2, integrator_dt=0.04, segmented=True))
-    print("---Magnus, segmented, k=3:")
+        t=1, k=2, integrator_dt=0.04, segmented=True))
+    print("\n\n---Magnus, segmented, k=3:")
     print(magnus(
         hermitian_functions.two_spin_qubit_system.at_t,
-        t=4, k=3, integrator_dt=0.04, segmented=True))
+        t=1, k=3, integrator_dt=0.04, segmented=True))
+
+    # print("---Magnus, non-segmented, k=2:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system,
+    #     t=1, k=1))
+    # print("---Magnus, non-segmented, k=3:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system,
+    #     t=1, k=2))
+    # print("---Magnus, segmented, k=2:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system,
+    #     t=1, k=1, segmented=True))
+    # print("---Magnus, segmented, k=3:")
+    # print(analytic_magnus(
+    #     hermitian_functions.two_spin_qubit_system,
+    #     t=1, k=2, segmented=True))
