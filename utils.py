@@ -1,6 +1,25 @@
 import math
 import numpy as np
 
+def walker(map_fn, struct):
+    """Walks over a (potentially nested) data structure
+    struct made of lists and dicts, and applies map_fn to
+    the "leaves" of the structure, where a "leaf" is something
+    that isn't a dict or a list"""
+    if isinstance(struct, list):
+        for i, val in enumerate(struct):
+            if isinstance(val, list) or isinstance(val, dict):
+                struct[i] = walker(map_fn, struct[i])
+            else:
+                struct[i] = map_fn(struct[i])
+    elif isinstance(struct, dict):
+        for i, val in struct.items():
+            if isinstance(val, list) or isinstance(val, dict):
+                struct[i] = walker(map_fn, struct[i])
+            else:
+                struct[i] = map_fn(struct[i])
+    return struct
+
 
 def fidelity(U_tilde, U, n):
     '''

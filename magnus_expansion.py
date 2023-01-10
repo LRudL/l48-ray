@@ -140,7 +140,7 @@ def magnus(
         )
 
         return segmented_handler(callback, t, segment_margin, sample, verbose=True)
-
+    
     n = get_Ht(0).shape[0]
 
     U_0 = np.eye(n, dtype=complex)
@@ -273,6 +273,20 @@ def analytic_magnus(
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
+def arg_broadcast_wrapper(fn, argname):
+    def wrapped(*args, **kwargs):
+        if isinstance(kwargs[argname], list):
+            new_kwargs = {**kwargs}
+            results = {}
+            for argval in new_kwargs[argname]:
+                new_kwargs[argname] = argval
+                results[argname + "=" + str(argval)] = fn(*args, **new_kwargs)
+            return results
+        return fn(**kwargs)
+    return wrapped
+
+analytic_magnus_k = arg_broadcast_wrapper(analytic_magnus, "k")
+naive_magnus_k = arg_broadcast_wrapper(magnus, "k")
 
 if __name__ == "__main__":
     
