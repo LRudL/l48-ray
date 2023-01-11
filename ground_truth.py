@@ -54,3 +54,11 @@ def naive_simulation(get_Ht, T, dt):
         U_ts.append(U_t)
 
     return U_t, U_ts
+
+def naive_simulator(get_Ht, t, t_start, dt):
+    if isinstance(get_Ht, hermitian_functions.ConstantMatrixHermitian):
+        get_Ht = get_Ht.at_t
+    get_Ht_ = get_Ht
+    if t_start != 0:
+        get_Ht_ = lambda t : get_Ht(t + t_start)
+    return naive_simulation(get_Ht_, t, dt)[0]
