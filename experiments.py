@@ -132,15 +132,14 @@ experiments = [
             )
         ],
         indep_var="dt",
-        indep_var_range=[2e-1, 5e-2, 2e-2, 5e-3, 2e-3],
+        indep_var_range=[1, 9e-1, 8e-1, 7e-1, 6e-1, 5e-1, 4e-1, 3e-1, 2e-1, 1e-1],
         # Pass any variables you want to be passed to all simulators here:
         const_vars={"t_start": 0, "t": 2}
     ),
     Experiment(
         name="convergence",
         systems=[
-            hermitian_functions.single_spin_qubit_system,
-            hermitian_functions.two_spin_qubits
+            hermitian_functions.two_spin_qubit_system
         ],
         simulators=[
             Simulator(
@@ -160,15 +159,41 @@ experiments = [
             )
         ],
         indep_var="dt",
-        indep_var_range=[2e-1, 2e-2],
+        indep_var_range=[1e-1, 3e-2, 1e-2],
         # Pass any variables you want to be passed to all simulators here:
         const_vars={"t_start": 0, "t": 2}
     )
 ]
 
+
+def plot_convergence(experiment, ground_truths):
+    results = experiment.fidelities(ground_truths)
+    dts = experiment.indep_var_range
+    for simulator in results:
+        simulator_results = results.get(simulator)
+        for system in simulator_results:
+            system_results = simulator_results.get(system)
+            k_values = len(system_results)
+            if simulator == "naive":
+                fidelities = system_results
+                plt.plot(dts, fidelities, label = simulator)
+            else:
+                for max_omega in range(1, k_values+1):
+                    key = "k=" + str(max_omega)
+                    fidelities = []
+                    for dt_res in system_results:
+                        fidelities.append(dt_res.get(key))
+                    plt.plot(dts, fidelities, label= simulator + " "+ key)
+    plt.xlabel("dt")
+    plt.ylabel("fidelity")
+    plt.legend()
+    plt.title("Convergence to the ground truth of a system over varying dt")
+    plt.savefig("convergence experiment t=0-2", bbox_inches = "tight")
+    plt.show()
+
+
 def plot_truncation_omegas(experiment, ground_truths):
     results = experiment.fidelities(ground_truths)
-    print(results)
     dts = experiment.indep_var_range
     for simulator in results:
         simulator_results = results.get(simulator)
@@ -180,7 +205,6 @@ def plot_truncation_omegas(experiment, ground_truths):
                 fidelities = []
                 for dt_res in system_results:
                     fidelities.append(dt_res.get(key))
-                print(simulator + key + str(fidelities))
                 plt.plot(dts, fidelities, label=key)
             plt.legend()
             plt.xlabel("dt")
