@@ -27,13 +27,13 @@ DEFAULT_SAVE_PATH = "experiment_data"
 class Experiment:
     def __init__(
         self, name : str,
-        systems : list[int],
+        systems,
         # different systems to plot
-        simulators: list[Simulator],
+        simulators,
         # independent variable for graph x axis:
         indep_var : str, # "dt" or "segments"
-        indep_var_range : list[Union[int, float]],
-        const_vars : dict[str, Any] = {}
+        indep_var_range ,
+        const_vars = None,
     ):
         self.name = name
         self.systems = systems
@@ -139,10 +139,19 @@ experiments = [
 ]
 # %%
 
-ground_truth_1 = np.array(
-    [[0.17945022+0.60663369j, 0.74265185-0.21968603j],
-    [0.74265185-0.21968603j, 0.17945022+0.60663369j]]
- )
+ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
+                                        [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]]},
+                 "alt sin single spin qubit": {(0,2): [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
+                                        [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]]},
+                 "two spin qubit": {(0,2):  [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
+                                                -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
+                                                [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
+                                                2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
+                                                [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
+                                                5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
+                                                [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
+                                                 -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}}
 
-experiments[0].fidelities(ground_truth_1)
+if __name__ == "__main__":
+    experiments[0].fidelities(ground_truth_1)
 # %%
