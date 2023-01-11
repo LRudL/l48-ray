@@ -31,7 +31,7 @@ def b_t(t):
 
 
 def sin_t(t):
-    return math.sin(t)
+    return np.sin(t)
 
 
 sigma_x = np.array([
