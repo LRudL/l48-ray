@@ -148,10 +148,6 @@ def magnus(
                                                                                integrator_dt, t2, 0),
                                                          integrator_dt, t1, 0),
                                    integrator_dt, t, 0))
-            print("The final value of Omega3:")
-            print(Omega_t_ks[-1])
-            print("------------------------------------------")
-
         else:
             raise Exception("Magnus not implemented for k > 3")
 
@@ -160,9 +156,7 @@ def magnus(
         for k, omega_k in enumerate(Omega_t_ks):
             print(f'Omega {k + 1}:\n{omega_k}')
 
-    # print(Omega_t_ks)
     Omega_t = np.sum(Omega_t_ks, axis=0)
-    # print(Omega_t)
 
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
@@ -240,7 +234,7 @@ def analytic_magnus(
         elif ki == 2:
             edelta = np.exp(-tstar ** 2 / 2 / s) - np.exp(-(tstar - t) ** 2 / 2 / s)
             sum = np.sum(eta * (2 * s * edelta + sspi2 * (2 * tstar - t) * (erf_ts - erf_ts_t)))
-            res = A * sqbrackets(H_0, V) * sum
+            res = 0.5 * (A * sqbrackets(H_0, V) * sum)
             Omega_t_ks.append(res)
         else:
             raise Exception(f"Analytic Magnus not implemented for k={k}")
