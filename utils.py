@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-def walker(map_fn, struct):
+def walker(map_fn, struct, prev_keys=[]):
     """Walks over a (potentially nested) data structure
     struct made of lists and dicts, and applies map_fn to
     the "leaves" of the structure, where a "leaf" is something
@@ -9,15 +9,15 @@ def walker(map_fn, struct):
     if isinstance(struct, list):
         for i, val in enumerate(struct):
             if isinstance(val, list) or isinstance(val, dict):
-                struct[i] = walker(map_fn, struct[i])
+                struct[i] = walker(map_fn, struct[i], prev_keys + [i])
             else:
-                struct[i] = map_fn(struct[i])
+                struct[i] = map_fn(struct[i], prev_keys)
     elif isinstance(struct, dict):
         for i, val in struct.items():
             if isinstance(val, list) or isinstance(val, dict):
-                struct[i] = walker(map_fn, struct[i])
+                struct[i] = walker(map_fn, struct[i], prev_keys + [i])
             else:
-                struct[i] = map_fn(struct[i])
+                struct[i] = map_fn(struct[i], prev_keys)
     return struct
 
 

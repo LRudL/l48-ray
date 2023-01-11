@@ -79,12 +79,19 @@ class Experiment:
         #  and otherwise OBJ will be a value
         return results
     
-    def fidelities(self, ground_truth):
+    def fidelities(self, ground_truths):
         results = self.results()
-        return utils.walker(
-            lambda mat : utils.fidelity(mat, ground_truth, len(ground_truth)),
-            results
-        )
+        def find_ground_truth_and_get_fidelity(result_matrix, prev_keys):
+            correct_ground_truth = None
+            for key in prev_keys:
+                # key loops through all of the indices, list index and dictionary key,
+                # above the matrix in results
+                if key in ground_truths.keys():
+                    correct_ground_truth = ground_truths[key]
+            if correct_ground_truth is None:
+                raise Exception(f"ground_truths passed into fidelities does not contain an entry for any of {prev_keys}")
+            return utils.fidelity(result_matrix, correct_ground_truth, len(correct_ground_truth))
+        return utils.walker(find_ground_truth_and_get_fidelity, results)
 
 
     def run(self, ground_truth, save=False, save_path=DEFAULT_SAVE_PATH):
@@ -139,19 +146,32 @@ experiments = [
 ]
 # %%
 
-ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
-                                        [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]]},
-                 "alt sin single spin qubit": {(0,2): [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
-                                        [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]]},
-                 "two spin qubit": {(0,2):  [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
+# ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
+#                                         [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]]},
+#                  "alt sin single spin qubit": {(0,2): [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
+#                                         [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]]},
+#                  "two spin qubit": {(0,2):  [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
+#                                                 -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
+#                                                 [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
+#                                                 2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
+#                                                 [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
+#                                                 5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
+#                                                 [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
+#                                                  -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}}
+
+ground_truths = {"single spin qubit": [[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
+                                        [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]],
+                 "alt sin single spin qubit": [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
+                                        [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]],
+                 "two spin qubit": [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
                                                 -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
                                                 [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
                                                 2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
                                                 [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
                                                 5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
                                                 [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
-                                                 -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}}
+                                                 -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}
 
 if __name__ == "__main__":
-    experiments[0].fidelities(ground_truth_1)
+    experiments[0].fidelities(ground_truths)
 # %%
