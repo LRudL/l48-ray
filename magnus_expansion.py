@@ -57,43 +57,9 @@ def euler_integrator2(f, dt, t, t0=0):
     return s
 
 
-def generate_bernoulli(n):
-    if n == 0:
-        return 1
-    else:
-        x = 0
-        for k in range(0, n):
-            answer -= math.comb(n, k) * bernoulli(k) / (n - k + 1)
-
-
-def memoizer(fn):
-    stored_vals = {}
-
-    def memoized(*args):
-        # note: args is tuple, so can hash, so can use as key
-        if args in stored_vals.keys():
-            return stored_vals[args]
-        else:
-            x = fn(*args)
-            stored_vals[args] = x
-            return x
-
-    return memoized
-
-
-bernoulli = memoizer(generate_bernoulli)
-
-
 def sqbrackets(A, B):
     # what is written [A, B] in the Wikipedia page for Magnus expansion
     return A @ B - B @ A
-
-
-def ad(k, Omega, A):
-    if k == 0:
-        return A
-    else:
-        return sqbrackets(Omega, ad(k - 1, Omega, A))
 
 
 def segmented_handler(callback, t, segment_margin, sample, verbose):
@@ -107,8 +73,8 @@ def segmented_handler(callback, t, segment_margin, sample, verbose):
         t_start += max_dt
     if verbose:
         # for i, Ut in enumerate(Uts):
-            # print(f"Segment matrix {i}:")
-            # print(Ut)
+        # print(f"Segment matrix {i}:")
+        # print(Ut)
         print(f"Divided section into {len(Uts)} segments")
     prod = np.eye(Uts[0].shape[0])
     for Ut in Uts:
@@ -117,14 +83,15 @@ def segmented_handler(callback, t, segment_margin, sample, verbose):
 
 
 def magnus(
-    get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01, dt=None,
-    t_start = 0, segmented = False, segment_margin = 3,
-    verbose: bool = False
+        get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01, dt=None,
+        t_start=0, segmented=False, segment_margin=3,
+        verbose: bool = False
 ):
     """Assume we have a system following  U'(t) = A(t) U(t);
     use the Magnus expansion approach to estimate U(t)"""
 
-    print(f"Calling magnus with k={k}, integrator_dt={integrator_dt}, dt={dt}, segmented={segmented}, range={t_start} to {t}")
+    print(
+        f"Calling magnus with k={k}, integrator_dt={integrator_dt}, dt={dt}, segmented={segmented}, range={t_start} to {t}")
 
     if isinstance(get_Ht_, hermitian_functions.ConstantMatrixHermitian):
         get_Ht_ = get_Ht_.at_t
@@ -132,15 +99,15 @@ def magnus(
         integrator_dt = dt
     get_Ht = get_Ht_
     if t_start != 0:
-        get_Ht = lambda t : get_Ht_(t + t_start)
+        get_Ht = lambda t: get_Ht_(t + t_start)
         t = t - t_start
     # from this point onwards, it is as if the range is [0, t],
     # even if it originally was [t_start, t]
 
     if segmented:
-        sample = -(0+1j) * get_Ht(t/2)
-        
-        callback = lambda t_start, t : magnus(
+        sample = -(0 + 1j) * get_Ht(t / 2)
+
+        callback = lambda t_start, t: magnus(
             get_Ht, t, k, integrator, integrator_dt, integrator_dt,
             t_start, False, segment_margin,
             verbose
@@ -202,10 +169,10 @@ def magnus(
 
 
 def analytic_magnus(
-    components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01, dt=None,
-    segmented = False, segment_margin = 3,
-    t_start = 0,
-    verbose = False
+        components, t, rbf_scale=1, rbf_C=1, k=1, tstar_dt=0.01, dt=None,
+        segmented=False, segment_margin=3,
+        t_start=0,
+        verbose=False
 ):
     """Assume we have a system following  U'(t) = -i H(t) U(t).
     Assume:
@@ -231,7 +198,7 @@ def analytic_magnus(
     H_0, get_vt_, V = components
     get_vt = get_vt_
     if t_start != 0:
-        get_vt = lambda t : get_vt_(t + t_start)
+        get_vt = lambda t: get_vt_(t + t_start)
         t = t - t_start
     # from this point onwards, it is as if the range is [0, t],
     # even if it originally was [t_start, t]
@@ -239,11 +206,11 @@ def analytic_magnus(
     get_K = get_rbf(rbf_scale, rbf_C)
 
     if segmented:
-        sample = -(0+1j) * (H_0 + get_vt(t/2) * V)
-        
-        callback = lambda t_start, t : analytic_magnus(
+        sample = -(0 + 1j) * (H_0 + get_vt(t / 2) * V)
+
+        callback = lambda t_start, t: analytic_magnus(
             components, t, rbf_scale, rbf_C, k, tstar_dt, tstar_dt, False, segment_margin,
-            t_start = t_start
+            t_start=t_start
         )
 
         return segmented_handler(callback, t, segment_margin, sample, verbose=verbose)
@@ -283,6 +250,7 @@ def analytic_magnus(
     answer = scipy.linalg.expm(Omega_t) @ U_0
     return answer
 
+
 def arg_broadcast_wrapper(fn, argname):
     def wrapped(*args, **kwargs):
         if isinstance(kwargs[argname], list):
@@ -293,13 +261,14 @@ def arg_broadcast_wrapper(fn, argname):
                 results[argname + "=" + str(argval)] = fn(*args, **new_kwargs)
             return results
         return fn(**kwargs)
+
     return wrapped
+
 
 analytic_magnus_k = arg_broadcast_wrapper(analytic_magnus, "k")
 naive_magnus_k = arg_broadcast_wrapper(magnus, "k")
 
 if __name__ == "__main__":
-
     # print("---Magnus, non-segmented:")
     # print(magnus(
     #     hermitian_functions.two_spin_qubit_system.at_t,
@@ -319,38 +288,35 @@ if __name__ == "__main__":
     #     t=4, k=2, tstar_dt=0.004,
     #     segmented=True, verbose=True))
 
-    print("\n\n---Naive::")
-    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start = 0, t=1, dt=0.001))
-    print("\n\n---Magnus, non-segmented, k=2:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=1, k=2, integrator_dt=0.04))
-    print("\n\n---Magnus, non-segmented, k=3:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=1, k=3, integrator_dt=0.04))
-    print("\n\n---Magnus, segmented, k=2:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=1, k=2, integrator_dt=0.04, segmented=True))
-    print("\n\n---Magnus, segmented, k=3:")
-    print(magnus(
-        hermitian_functions.two_spin_qubit_system.at_t,
-        t=1, k=3, integrator_dt=0.04, segmented=True))
+    t_f = 5
 
-    # print("---Magnus, non-segmented, k=2:")
-    # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system,
-    #     t=1, k=1))
-    # print("---Magnus, non-segmented, k=3:")
-    # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system,
-    #     t=1, k=2))
-    # print("---Magnus, segmented, k=2:")
-    # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system,
-    #     t=1, k=1, segmented=True))
-    # print("---Magnus, segmented, k=3:")
-    # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system,
-    #     t=1, k=2, segmented=True))
+    print("\n\n---Naive, ground truth::")
+    gt = ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start=0, t=t_f, dt=1e-4)
+    print(gt)
+    print("\n\n---Magnus, non-segmented, k=2:")
+    m_ns_2 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04)
+    print(m_ns_2)
+    print("\n\n---Magnus, non-segmented, k=3:")
+    m_ns_3 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04)
+    print(m_ns_3)
+    print("\n\n---Magnus, segmented, k=2:")
+    m_s_2 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04, segmented=True)
+    print(m_s_2)
+    print("\n\n---Magnus, segmented, k=3:")
+    m_s_3 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04, segmented=True)
+    print(m_s_3)
+
+    print("---Analytic Magnus, non-segmented, k=2:")
+    am_ns_1 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=1)
+    print(am_ns_1)
+    print("---Analytic Magnus, non-segmented, k=3:")
+    am_ns_2 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=2)
+    print(am_ns_2)
+    print("---Analytic Magnus, segmented, k=1:")
+    am_s_1 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=1, segmented=True)
+    print(am_s_1)
+    print("---Analytic Magnus, segmented, k=2:")
+    am_s_2 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=2, segmented=True)
+    print(am_s_2)
+
+    print()
