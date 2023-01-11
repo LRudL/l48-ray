@@ -90,7 +90,7 @@ class Experiment:
                     correct_ground_truth = ground_truths[key]
             if correct_ground_truth is None:
                 raise Exception(f"ground_truths passed into fidelities does not contain an entry for any of {prev_keys}")
-            return utils.fidelity(result_matrix, correct_ground_truth, len(correct_ground_truth))
+            return utils.fidelity(result_matrix, correct_ground_truth)
         return utils.walker(find_ground_truth_and_get_fidelity, results)
 
 
