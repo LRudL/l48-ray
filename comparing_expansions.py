@@ -37,13 +37,14 @@ def fidelity_over_dts(max_omega, max_t, ground_truth, hermitian, dts: list, verb
 
 if __name__ == '__main__':
     max_t = 2.
-    system = hermitian_functions.two_spin_qubits
+    system = hermitian_functions.alt_sin_ssq
     segmentation_needed = not(magnus_convergence(system, max_t))
     print("Series convergence for max_t: ", not(segmentation_needed))
     # ground_truth_alt_sin, _ = naive_simulation(hermitian_functions.alt_sin_ssq, max_t, 0.0001)
     # ground_truth_alt_sin = np.array([[-0.02379359 - 1.29625832e-07j, -0.18683116 - 9.82108654e-01j],
     #                                  [0.18683116 - 9.82108654e-01j, -0.02379359 + 1.29625851e-07j]])
-    ground_truth, _ = naive_simulation(system, max_t, 0.0001)
+    ground_truth, _ = naive_simulation(system, max_t, 0.000001)
+    print(ground_truth)
 
     dts = [5e-2, 4e-2, 3e-2, 2e-2, 1e-2, 5e-3]
     f1 = fidelity_over_dts(1, max_t, ground_truth, system, dts, segmented=segmentation_needed)

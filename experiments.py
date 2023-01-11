@@ -1,6 +1,7 @@
 # %%
 from typing import Callable, Union, Any
 import numpy as np
+import matplotlib.pyplot as plt
 
 import hermitian_functions
 import utils
@@ -114,12 +115,32 @@ systems = [
 
 experiments = [
     Experiment(
+        name="truncation omega and dt",
+        systems = [
+            hermitian_functions.single_spin_qubit_system,
+            hermitian_functions.alt_sin_ssq_system,
+            hermitian_functions.two_spin_qubit_system
+        ],
+        simulators=[
+            Simulator(
+                name = "magnus", function = naive_magnus_k,
+                k = [1, 2, 3], segmented = False
+            ),
+            Simulator(
+                name = "analytic magnus", function=analytic_magnus_k,
+                k = [1, 2], segmented = False
+            )
+        ],
+        indep_var="dt",
+        indep_var_range=[2e-1, 5e-2, 2e-2, 5e-3, 2e-3],
+        # Pass any variables you want to be passed to all simulators here:
+        const_vars={"t_start": 0, "t": 2}
+    ),
+    Experiment(
         name="convergence",
         systems=[
-            hermitian_functions.single_spin_qubit_system#,
-            # hermitian_functions.alt_ssq_system,
-            # hermitian_functions.alt_sin_ssq_system,
-            # hermitian_functions.two_spin_qubit_system
+            hermitian_functions.single_spin_qubit_system,
+            hermitian_functions.two_spin_qubits
         ],
         simulators=[
             Simulator(
@@ -130,7 +151,7 @@ experiments = [
                 function = naive_magnus_k,
                 # Pass any arguments specific to the simulator within
                 # the simulator.
-                k=[1, 2], segmented = False
+                k=[1, 2, 3], segmented = False
             ),
             Simulator(
                 name = "analytic_magnus",
@@ -144,7 +165,30 @@ experiments = [
         const_vars={"t_start": 0, "t": 2}
     )
 ]
-# %%
+
+def plot_truncation_omegas(experiment, ground_truths):
+    results = experiment.fidelities(ground_truths)
+    print(results)
+    dts = experiment.indep_var_range
+    for simulator in results:
+        simulator_results = results.get(simulator)
+        for system in simulator_results:
+            system_results = simulator_results.get(system)
+            k_values = len(system_results[0])
+            for max_omega in range(1, k_values+1):
+                key = "k=" + str(max_omega)
+                fidelities = []
+                for dt_res in system_results:
+                    fidelities.append(dt_res.get(key))
+                print(simulator + key + str(fidelities))
+                plt.plot(dts, fidelities, label=key)
+            plt.legend()
+            plt.xlabel("dt")
+            plt.ylabel("fidelity")
+            plt.title("Truncation error over different maximum omega values for system: " + system + ", " + simulator)
+            plt.savefig("omega truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
+            plt.show()
+
 
 # ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
 #                                         [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]]},
@@ -161,17 +205,17 @@ experiments = [
 
 ground_truths = {"single spin qubit": [[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
                                         [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]],
-                 "alt sin single spin qubit": [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
-                                        [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]],
-                 "two spin qubit": [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
-                                                -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
-                                                [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
-                                                2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
-                                                [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
-                                                5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
-                                                [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
-                                                 -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}
+                 "alt sin single spin qubit": [[-0.73582847-0.46178757j, -0.30887546-0.38717933j],
+                                            [ 0.30887546-0.38717933j, -0.73582847+0.46178757j]],
+                 "two spin qubit": [[-0.42536777-0.87350815j,  0.15624935-0.05410286j,  0.15624935-0.05410286j,
+                                      -0.00921961+0.03578977j],
+                                     [-0.15624935-0.05410286j, -0.42536777+0.87350815j, -0.00921961-0.03578977j,
+                                      -0.15624935-0.05410286j],
+                                     [-0.15624935-0.05410286j, -0.00921961-0.03578977j, -0.42536777+0.87350815j,
+                                      -0.15624935-0.05410286j],
+                                     [-0.00921961+0.03578977j,  0.15624935-0.05410286j,  0.15624935-0.05410286j,
+                                      -0.42536777-0.87350815j]]}
 
 if __name__ == "__main__":
-    experiments[0].fidelities(ground_truths)
+    plot_truncation_omegas(experiments[0], ground_truths)
 # %%
