@@ -30,6 +30,10 @@ def b_t(t):
     return 0.5 * np.exp(-(t - 2.5) ** 2)
 
 
+def b_t_shifted(t):
+    return 0.5 * np.exp(-((t+1) - 2.5) ** 2)
+
+
 def sin_t(t):
     return np.sin(t)
 
@@ -57,7 +61,14 @@ alt_sin_ssq_system = ConstantMatrixHermitian("alt sin single spin qubit", sigma_
 two_spin_qubit_system = ConstantMatrixHermitian("two spin qubit", np.kron(sigma_z, sigma_z), b_t,
                                                 np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
 
+tsq_shifted_system = ConstantMatrixHermitian("two spin qubit", np.kron(sigma_z, sigma_z), b_t_shifted,
+                                                np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
+
+ssq_shifted_system =  ConstantMatrixHermitian("single spin qubit", I_2, b_t_shifted, sigma_x)
+
 single_spin_qubit = single_spin_qubit_system.at_t
 two_spin_qubits = two_spin_qubit_system.at_t
 alt_ssq = alt_ssq_system.at_t
 alt_sin_ssq = alt_sin_ssq_system.at_t
+tsq_shifted = tsq_shifted_system.at_t
+ssq_shifted = ssq_shifted_system.at_t

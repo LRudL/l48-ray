@@ -37,7 +37,7 @@ def fidelity_over_dts(max_omega, max_t, ground_truth, hermitian, dts: list, verb
 
 if __name__ == '__main__':
     max_t = 2.
-    system = hermitian_functions.alt_sin_ssq
+    system = hermitian_functions.two_spin_qubits
     segmentation_needed = not(magnus_convergence(system, max_t))
     print("Series convergence for max_t: ", not(segmentation_needed))
     # ground_truth_alt_sin, _ = naive_simulation(hermitian_functions.alt_sin_ssq, max_t, 0.0001)
