@@ -131,6 +131,33 @@ experiments = [
         const_vars={"t_start": 0, "t": 2}
     ),
     Experiment(
+        name="truncation segmentation",
+        systems=[
+            hermitian_functions.ssq_shifted_system,
+            hermitian_functions.alt_sin_ssq_system,
+            hermitian_functions.tsq_shifted_system
+        ],
+        simulators=[
+            Simulator(
+                name="magnus",
+                function=naive_magnus_k,
+                # Pass any arguments specific to the simulator within
+                # the simulator.
+                k=[1, 2, 3]
+            ),
+            Simulator(
+                name="analytic magnus",
+                function=analytic_magnus_k,
+                # Pass any arguments specific to the simulator within
+                # the simulator.
+                k=[1, 2]
+            )
+        ],
+        indep_var="segmented",
+        indep_var_range=[1,2,3,4,5],
+        const_vars={"t_start":0, "t":2}
+    ),
+    Experiment(
         name="convergence",
         systems=[
             hermitian_functions.two_spin_qubit_system
@@ -159,6 +186,32 @@ experiments = [
     )
 ]
 
+def plot_truncation(experiment, ground_truths, indep_var = "dt"):
+    results = experiment.fidelities(ground_truths)
+    indep_var_vals = experiment.indep_var_range
+    for simulator in results:
+        simulator_results = results.get(simulator)
+        for system in simulator_results:
+            system_results = simulator_results.get(system)
+            k_values = len(system_results[0])
+            markers = ['*', 'o', 'X', 's', '>', 'd', 'H', '<', '^', '1', '2', '3', 'p']
+            for max_omega in range(1, k_values + 1):
+                key = "k=" + str(max_omega)
+                fidelities = []
+                for dt_res in system_results:
+                    fidelities.append(dt_res.get(key))
+                plt.plot(indep_var_vals, fidelities, label=key, marker=markers[max_omega-1])
+            plt.legend()
+            plt.xlabel(indep_var)
+            plt.ylabel("fidelity")
+            if indep_var == "dt":
+                plt.title("Truncation error over different maximum omega values for system: " + system + ", " + simulator)
+                plt.savefig("omega truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
+            else:
+                plt.title("Truncation error over different number of segments: " + system + ", " + simulator)
+                plt.savefig("segmentation truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
+            plt.show()
+
 
 def plot_convergence(experiment, ground_truths):
     results = experiment.fidelities(ground_truths)
@@ -185,30 +238,6 @@ def plot_convergence(experiment, ground_truths):
     plt.savefig("convergence experiment t=0-2", bbox_inches="tight")
     plt.show()
 
-
-def plot_truncation_omegas(experiment, ground_truths):
-    results = experiment.fidelities(ground_truths)
-    print(results)
-    dts = experiment.indep_var_range
-    for simulator in results:
-        simulator_results = results.get(simulator)
-        for system in simulator_results:
-            system_results = simulator_results.get(system)
-            k_values = len(system_results[0])
-            markers = ['*', '.', 'x']
-            for max_omega in range(1, k_values + 1):
-                key = "k=" + str(max_omega)
-                fidelities = []
-                for dt_res in system_results:
-                    fidelities.append(dt_res.get(key))
-                print(simulator + key + str(fidelities))
-                plt.plot(dts, fidelities, label=key, marker=markers[max_omega-1])
-            plt.legend()
-            plt.xlabel("dt")
-            plt.ylabel("fidelity")
-            plt.title("Truncation error over different maximum omega values for system: " + system + ", " + simulator)
-            plt.savefig("omega truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
-            plt.show()
 
 
 # ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
@@ -251,5 +280,4 @@ ground_truths_shifted = {"single spin qubit": [[-0.3290767 -0.71904284j, -0.5565
                                               -0.55430206-0.67417283j]]}
 
 if __name__ == "__main__":
-    plot_truncation_omegas(experiments[0], ground_truths_shifted)
-# %%
+    plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")

@@ -94,7 +94,7 @@ def segmented_handler(
 
 
 def magnus(
-        get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.01, dt=None,
+        get_Ht_, t, k=1, integrator=euler_integrator2, integrator_dt=0.1, dt=None,
         t_start=0, segmented=False, segment_margin=3,
         verbose: bool = False
 ):
