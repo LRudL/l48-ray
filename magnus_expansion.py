@@ -62,8 +62,19 @@ def sqbrackets(A, B):
     return A @ B - B @ A
 
 
-def segmented_handler(callback, t, segment_margin, sample, verbose):
+def ad(k, Omega, A):
+    if k == 0:
+        return A
+    else:
+        return sqbrackets(Omega, ad(k - 1, Omega, A))
+
+
+def segmented_handler(
+    callback, t, segment_margin, sample, verbose, force_segment_count = None
+):
     max_dt = math.pi / segment_margin / np.linalg.norm(sample, ord='fro')
+    if force_segment_count is not None:
+        max_dt = t / force_segment_count
     Uts = []
     t_start = 0
     while t_start < t:
@@ -105,16 +116,18 @@ def magnus(
     # even if it originally was [t_start, t]
 
     if segmented:
-        sample = -(0 + 1j) * get_Ht(t / 2)
-
-        callback = lambda t_start, t: magnus(
+        sample = -(0+1j) * get_Ht(t/2)
+        force_segment_count = None if isinstance(segmented, bool) else segmented
+        
+        callback = lambda t_start, t : magnus(
             get_Ht, t, k, integrator, integrator_dt, integrator_dt,
             t_start, False, segment_margin,
             verbose
         )
-
-        return segmented_handler(callback, t, segment_margin, sample, verbose=True)
-
+        return segmented_handler(
+            callback, t, segment_margin, sample, verbose=True, 
+            force_segment_count=force_segment_count
+        )
     n = get_Ht(0).shape[0]
 
     U_0 = np.eye(n, dtype=complex)
@@ -200,14 +213,19 @@ def analytic_magnus(
     get_K = get_rbf(rbf_scale, rbf_C)
 
     if segmented:
-        sample = -(0 + 1j) * (H_0 + get_vt(t / 2) * V)
+        sample = -(0+1j) * (H_0 + get_vt(t/2) * V)
 
-        callback = lambda t_start, t: analytic_magnus(
+        force_segment_count = None if isinstance(segmented, bool) else segmented
+        
+        callback = lambda t_start, t : analytic_magnus(
             components, t, rbf_scale, rbf_C, k, tstar_dt, tstar_dt, False, segment_margin,
             t_start=t_start
         )
 
-        return segmented_handler(callback, t, segment_margin, sample, verbose=verbose)
+        return segmented_handler(
+            callback, t, segment_margin, sample, verbose=verbose,
+            force_segment_count=force_segment_count
+        )
 
     A = rbf_C
     s = rbf_scale
@@ -281,9 +299,29 @@ if __name__ == "__main__":
     #     hermitian_functions.two_spin_qubit_system.get_components(),
     #     t=4, k=2, tstar_dt=0.004,
     #     segmented=True, verbose=True))
-
     t_f = 5
-
+    print("\n\n---Naive::")
+    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start = 0, t=1, dt=0.001))
+    # print("\n\n---Magnus, non-segmented, k=1:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=1, k=1, integrator_dt=0.04))
+    # print("\n\n---Magnus, non-segmented, k=2:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=1, k=2, integrator_dt=0.04))
+    # print("\n\n---Magnus, non-segmented, k=3:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=1, k=3, integrator_dt=0.04))
+    # print("\n\n---Magnus, segmented, k=2:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=1, k=2, integrator_dt=0.04, segmented=5))
+    # print("\n\n---Magnus, segmented, k=3:")
+    # print(magnus(
+    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     t=1, k=3, integrator_dt=0.04, segmented=5))
     print("\n\n---Naive, ground truth::")
     gt = ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start=0, t=t_f, dt=1e-4)
     print(gt)
