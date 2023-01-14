@@ -14,7 +14,7 @@ class Simulator:
         self.name = name
         self.kwargs = kwargs
         # requirements on `function``:
-        # - it can take in a hamiltonians.ConstantHermitianFunction 
+        # - it can take in a hamiltonians.Hamiltonian 
         #   as a first argument
         # - 
         self.function = function
