@@ -5,7 +5,7 @@ import numpy as np
 
 
 # Class for systems of the form: H(t) = H_0 + v(t)V
-class ConstantMatrixHermitian:
+class Hamiltonian:
     def __init__(self, name, H_0, get_vt, V):
         self.name = name
         self.H_0 = H_0
@@ -52,19 +52,19 @@ sigma_z = np.array([
 
 I_2 = np.eye(2, dtype=complex)
 
-single_spin_qubit_system = ConstantMatrixHermitian("single spin qubit", I_2, b_t, sigma_x)
+single_spin_qubit_system = Hamiltonian("single spin qubit", I_2, b_t, sigma_x)
 
-alt_ssq_system = ConstantMatrixHermitian("alt single spin qubit", sigma_x, b_t, sigma_z)
+alt_ssq_system = Hamiltonian("alt single spin qubit", sigma_x, b_t, sigma_z)
 
-alt_sin_ssq_system = ConstantMatrixHermitian("alt sin single spin qubit", sigma_x, sin_t, sigma_z)
+alt_sin_ssq_system = Hamiltonian("alt sin single spin qubit", sigma_x, sin_t, sigma_z)
 
-two_spin_qubit_system = ConstantMatrixHermitian("two spin qubit", np.kron(sigma_z, sigma_z), b_t,
-                                                np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
+two_spin_qubit_system = Hamiltonian("two spin qubit", np.kron(sigma_z, sigma_z), b_t,
+                                    np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
 
-tsq_shifted_system = ConstantMatrixHermitian("two spin qubit", np.kron(sigma_z, sigma_z), b_t_shifted,
-                                                np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
+tsq_shifted_system = Hamiltonian("two spin qubit", np.kron(sigma_z, sigma_z), b_t_shifted,
+                                 np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
 
-ssq_shifted_system =  ConstantMatrixHermitian("single spin qubit", I_2, b_t_shifted, sigma_x)
+ssq_shifted_system =  Hamiltonian("single spin qubit", I_2, b_t_shifted, sigma_x)
 
 single_spin_qubit = single_spin_qubit_system.at_t
 two_spin_qubits = two_spin_qubit_system.at_t

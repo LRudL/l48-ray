@@ -104,7 +104,7 @@ def magnus(
     print(
         f"Calling magnus with k={k}, integrator_dt={integrator_dt}, dt={dt}, segmented={segmented}, range={t_start} to {t}")
 
-    if isinstance(get_Ht_, hermitian_functions.ConstantMatrixHermitian):
+    if isinstance(get_Ht_, hermitian_functions.Hamiltonian):
         get_Ht_ = get_Ht_.at_t
     if dt is not None:
         integrator_dt = dt
@@ -199,7 +199,7 @@ def analytic_magnus(
     if dt is not None:
         tstar_dt = dt
 
-    if isinstance(components, hermitian_functions.ConstantMatrixHermitian):
+    if isinstance(components, hermitian_functions.Hamiltonian):
         components = components.get_components()
 
     H_0, get_vt_, V = components
