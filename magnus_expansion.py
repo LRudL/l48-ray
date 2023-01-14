@@ -9,6 +9,12 @@ import ground_truth
 from utils import fidelity
 
 
+def calc_conv_param(ham_at_t: callable, t_final: float, t_start=0, dt=1e-5) -> float:
+    mat_norm = lambda t: np.linalg.norm(ham_at_t(t), ord=2)
+
+    return euler_integrator2(mat_norm, dt, t_final, t_start) / np.pi
+
+
 def rbf(x, y):
     return np.exp(-(x - y) ** 2 / 2)
 
@@ -70,7 +76,7 @@ def ad(k, Omega, A):
 
 
 def segmented_handler(
-    callback, t, segment_margin, sample, verbose, force_segment_count = None
+        callback, t, segment_margin, sample, verbose, force_segment_count=None
 ):
     max_dt = math.pi / segment_margin / np.linalg.norm(sample, ord=2)
     if force_segment_count is not None:
@@ -116,16 +122,16 @@ def magnus(
     # even if it originally was [t_start, t]
 
     if segmented:
-        sample = -(0+1j) * get_Ht(t/2)
+        sample = -(0 + 1j) * get_Ht(t / 2)
         force_segment_count = None if isinstance(segmented, bool) else segmented
-        
-        callback = lambda t_start, t : magnus(
+
+        callback = lambda t_start, t: magnus(
             get_Ht, t, k, integrator, integrator_dt, integrator_dt,
             t_start, False, segment_margin,
             verbose
         )
         return segmented_handler(
-            callback, t, segment_margin, sample, verbose=True, 
+            callback, t, segment_margin, sample, verbose=True,
             force_segment_count=force_segment_count
         )
     n = get_Ht(0).shape[0]
@@ -213,11 +219,11 @@ def analytic_magnus(
     get_K = get_rbf(rbf_scale, rbf_C)
 
     if segmented:
-        sample = -(0+1j) * (H_0 + get_vt(t/2) * V)
+        sample = -(0 + 1j) * (H_0 + get_vt(t / 2) * V)
 
         force_segment_count = None if isinstance(segmented, bool) else segmented
-        
-        callback = lambda t_start, t : analytic_magnus(
+
+        callback = lambda t_start, t: analytic_magnus(
             components, t, rbf_scale, rbf_C, k, tstar_dt, tstar_dt, False, segment_margin,
             t_start=t_start
         )
@@ -301,7 +307,7 @@ if __name__ == "__main__":
     #     segmented=True, verbose=True))
     t_f = 5
     print("\n\n---Naive::")
-    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start = 0, t=1, dt=0.001))
+    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start=0, t=1, dt=0.001))
     # print("\n\n---Magnus, non-segmented, k=1:")
     # print(magnus(
     #     hermitian_functions.two_spin_qubit_system.at_t,
