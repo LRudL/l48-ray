@@ -9,7 +9,7 @@ import ground_truth
 from utils import fidelity
 
 
-def calc_conv_param(ham_at_t: callable, t_final: float, t_start=0, dt=1e-5) -> float:
+def calc_conv_param(ham_at_t: callable, t_final: float, t_start=0, dt=1e-3) -> float:
     mat_norm = lambda t: np.linalg.norm(ham_at_t(t), ord=2)
 
     return euler_integrator2(mat_norm, dt, t_final, t_start) / np.pi

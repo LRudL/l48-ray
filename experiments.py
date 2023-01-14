@@ -1,4 +1,5 @@
 # %%
+from copy import deepcopy
 from typing import Callable, Union, Any, List
 import numpy as np
 import matplotlib.pyplot as plt
@@ -283,6 +284,40 @@ def generate_ground_truth(experiment: Experiment, dt=1e-5) -> dict:
     return ground_truths
 
 
+def get_pulse_amp_with_conv_param(system: hamiltonians.Hamiltonian, goal_conv_param: float, t_final: float,
+                                  t_start: float = 0, max_amp: float = 3) -> float:
+    closest_conv_param = np.inf
+    opt_amp = None
+    for amp in np.linspace(0, max_amp):
+        sys_w_diff_amp = deepcopy(system)
+        sys_w_diff_amp.get_vt = lambda t: amp * system.get_vt(t)
+        conv_param = calc_conv_param(sys_w_diff_amp.at_t, t_final, t_start)
+        if abs(conv_param - goal_conv_param) < abs(goal_conv_param - closest_conv_param):
+            closest_conv_param = conv_param
+            opt_amp = amp
+
+    return opt_amp
+
+
+def get_exp_with_conv_param(experiment: Experiment, goal_conv_param: float) -> Experiment:
+    systems = experiment.systems
+    t_final = experiment.const_vars['t']
+    t_start = experiment.const_vars['t_start']
+
+    corrected_systems = []
+    for system in systems:
+        opt_amp = get_pulse_amp_with_conv_param(system, goal_conv_param, t_final, t_start)
+
+        corrected_sys = deepcopy(system)
+        corrected_sys.get_vt = lambda t: opt_amp * system.get_vt(t)
+
+        corrected_systems.append(corrected_sys)
+
+    experiment = deepcopy(experiment)
+    experiment.systems = corrected_systems
+    return experiment
+
+
 ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 + 0.0876828j],
                                        [-0.19159047 + 0.0876828j, -0.40680456 - 0.88888417j]],
                  "alt sin single spin qubit": [[-0.73582847 - 0.46178757j, -0.30887546 - 0.38717933j],
@@ -311,9 +346,11 @@ ground_truths_shifted = {"single spin qubit": [[-0.3290767 - 0.71904284j, -0.556
                               -0.55430206 - 0.67417283j]]}
 
 if __name__ == "__main__":
-    pulse_mismatch_gt = generate_ground_truth(experiments[2])
+    exp = get_exp_with_conv_param(experiments[2], goal_conv_param=0.75)
+
+    pulse_mismatch_gt = generate_ground_truth(exp)
     print(pulse_mismatch_gt)
-    plot_pulses_mismatch(experiments[2], pulse_mismatch_gt)
+    plot_pulses_mismatch(exp, pulse_mismatch_gt)
     # plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")
 
     plt.show()
