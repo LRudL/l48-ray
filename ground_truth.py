@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import hermitian_functions
+import hamiltonians
 
 
 def get_Ht_test1(t, E_0, b):

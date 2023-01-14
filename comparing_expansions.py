@@ -1,7 +1,7 @@
 import math
 
 import matplotlib.pyplot as plt
-import hermitian_functions
+import hamiltonians
 from ground_truth import naive_simulation
 from magnus_expansion import magnus
 from utils import fidelity, magnus_convergence

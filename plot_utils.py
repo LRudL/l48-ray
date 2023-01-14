@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from qutip import Bloch
 from ground_truth import naive_simulation, get_Ht_test1
-import hermitian_functions
+import hamiltonians
 
 
 def plot_U_elements(T, dt, get_Ht):

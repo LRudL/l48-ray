@@ -3,7 +3,7 @@ from typing import Callable, Union, Any
 import numpy as np
 import matplotlib.pyplot as plt
 
-import hermitian_functions
+import hamiltonians
 import utils
 from ground_truth import naive_simulator
 from magnus_expansion import naive_magnus_k, analytic_magnus_k
@@ -14,7 +14,7 @@ class Simulator:
         self.name = name
         self.kwargs = kwargs
         # requirements on `function``:
-        # - it can take in a hermitian_functions.ConstantHermitianFunction 
+        # - it can take in a hamiltonians.ConstantHermitianFunction 
         #   as a first argument
         # - 
         self.function = function
@@ -101,19 +101,19 @@ class Experiment:
 
 
 systems = [
-    hermitian_functions.single_spin_qubit_system,
-    hermitian_functions.alt_ssq_system,
-    hermitian_functions.alt_sin_ssq_system,
-    hermitian_functions.two_spin_qubit_system
+    hamiltonians.single_spin_qubit_system,
+    hamiltonians.alt_ssq_system,
+    hamiltonians.alt_sin_ssq_system,
+    hamiltonians.two_spin_qubit_system
 ]
 
 experiments = [
     Experiment(
         name="truncation omega and dt",
         systems=[
-            hermitian_functions.ssq_shifted_system,
-            hermitian_functions.alt_sin_ssq_system,
-            hermitian_functions.tsq_shifted_system
+            hamiltonians.ssq_shifted_system,
+            hamiltonians.alt_sin_ssq_system,
+            hamiltonians.tsq_shifted_system
         ],
         simulators=[
             Simulator(
@@ -126,16 +126,16 @@ experiments = [
             )
         ],
         indep_var="dt",
-        indep_var_range= [1, .9, .8, .7, .6, .5, .4, .3, .2, .1],
+        indep_var_range=[1, .9, .8, .7, .6, .5, .4, .3, .2, .1],
         # Pass any variables you want to be passed to all simulators here:
         const_vars={"t_start": 0, "t": 2}
     ),
     Experiment(
         name="truncation segmentation",
         systems=[
-            hermitian_functions.ssq_shifted_system,
-            hermitian_functions.alt_sin_ssq_system,
-            hermitian_functions.tsq_shifted_system
+            hamiltonians.ssq_shifted_system,
+            hamiltonians.alt_sin_ssq_system,
+            hamiltonians.tsq_shifted_system
         ],
         simulators=[
             Simulator(
@@ -154,13 +154,30 @@ experiments = [
             )
         ],
         indep_var="segmented",
-        indep_var_range=[1,2,3,4,5],
-        const_vars={"t_start":0, "t":2}
+        indep_var_range=[1, 2, 3, 4, 5],
+        const_vars={"t_start": 0, "t": 2}
+    ),
+    Experiment(
+        name="pulse mismatch",
+        systems=[
+            hamiltonians.two_spin_qubit_system
+        ],
+        simulators=[
+            Simulator(
+                name="analytic_magnus",
+                function=analytic_magnus_k,
+                k=[1, 2], segmented=False
+            )
+        ],
+        indep_var="dt",
+        indep_var_range=[1, .9, .8, .7, .6, .5, .4, .3, .2, .1],
+        # Pass any variables you want to be passed to all simulators here:
+        const_vars={"t_start": 0, "t": 2}
     ),
     Experiment(
         name="convergence",
         systems=[
-            hermitian_functions.two_spin_qubit_system
+            hamiltonians.two_spin_qubit_system
         ],
         simulators=[
             Simulator(
@@ -186,7 +203,8 @@ experiments = [
     )
 ]
 
-def plot_truncation(experiment, ground_truths, indep_var = "dt"):
+
+def plot_truncation(experiment, ground_truths, indep_var="dt"):
     results = experiment.fidelities(ground_truths)
     indep_var_vals = experiment.indep_var_range
     for simulator in results:
@@ -200,12 +218,13 @@ def plot_truncation(experiment, ground_truths, indep_var = "dt"):
                 fidelities = []
                 for dt_res in system_results:
                     fidelities.append(dt_res.get(key))
-                plt.plot(indep_var_vals, fidelities, label=key, marker=markers[max_omega-1])
+                plt.plot(indep_var_vals, fidelities, label=key, marker=markers[max_omega - 1])
             plt.legend()
             plt.xlabel(indep_var)
             plt.ylabel("fidelity")
             if indep_var == "dt":
-                plt.title("Truncation error over different maximum omega values for system: " + system + ", " + simulator)
+                plt.title(
+                    "Truncation error over different maximum omega values for system: " + system + ", " + simulator)
                 plt.savefig("omega truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
             else:
                 plt.title("Truncation error over different number of segments: " + system + ", " + simulator)
@@ -239,20 +258,6 @@ def plot_convergence(experiment, ground_truths):
     plt.show()
 
 
-
-# ground_truths = {"single spin qubit": {(0,2):[[-0.40680456-0.88888417j, -0.19159047+0.0876828j ],
-#                                         [-0.19159047+0.0876828j,  -0.40680456-0.88888417j]]},
-#                  "alt sin single spin qubit": {(0,2): [[ 0.44764106-2.75461214e-06j, -0.27463933+8.51025179e-01j],
-#                                         [ 0.27463933+8.51025179e-01j,  0.44764106+2.75461214e-06j]]},
-#                  "two spin qubit": {(0,2):  [[ 5.39394615e-01+0.21393098j, -6.29490754e-12-0.14641604j,
-#                                                 -6.29494504e-12-0.14641604j,  2.55731720e-01-0.7449957j ],
-#                                                 [ 6.29485797e-12-0.14641604j,  5.39394615e-01-0.21393098j,
-#                                                 2.55731720e-01+0.7449957j,   6.29494854e-12-0.14641604j],
-#                                                 [ 6.29485797e-12-0.14641604j,  2.55731720e-01+0.7449957j,
-#                                                 5.39394615e-01-0.21393098j,  6.29494854e-12-0.14641604j],
-#                                                 [ 2.55731720e-01-0.7449957j,  -6.29497726e-12-0.14641604j,
-#                                                  -6.29494761e-12-0.14641604j,  5.39394615e-01+0.21393098j]]}}
-
 ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 + 0.0876828j],
                                        [-0.19159047 + 0.0876828j, -0.40680456 - 0.88888417j]],
                  "alt sin single spin qubit": [[-0.73582847 - 0.46178757j, -0.30887546 - 0.38717933j],
@@ -266,18 +271,19 @@ ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 +
                                     [-0.00921961 + 0.03578977j, 0.15624935 - 0.05410286j, 0.15624935 - 0.05410286j,
                                      -0.42536777 - 0.87350815j]]}
 
-ground_truths_shifted = {"single spin qubit": [[-0.3290767 -0.71904284j, -0.55659709+0.25473096j],
-                                                [-0.55659709+0.25473096j, -0.3290767 -0.71904284j]],
+ground_truths_shifted = {"single spin qubit": [[-0.3290767 - 0.71904284j, -0.55659709 + 0.25473096j],
+                                               [-0.55659709 + 0.25473096j, -0.3290767 - 0.71904284j]],
                          "alt sin single spin qubit": [[-0.73582847 - 0.46178757j, -0.30887546 - 0.38717933j],
                                                        [0.30887546 - 0.38717933j, -0.73582847 + 0.46178757j]],
-                         "two spin qubit": [[-0.55430206-0.67417283j,  0.16989756-0.23037152j,  0.16989756-0.23037152j,
-                                              -0.1381539 +0.23512509j],
-                                             [-0.16989756-0.23037152j, -0.55430206+0.67417283j, -0.1381539 -0.23512509j,
-                                              -0.16989756-0.23037152j],
-                                             [-0.16989756-0.23037152j, -0.1381539 -0.23512509j, -0.55430206+0.67417283j,
-                                              -0.16989756-0.23037152j],
-                                             [-0.1381539 +0.23512509j,  0.16989756-0.23037152j,  0.16989756-0.23037152j,
-                                              -0.55430206-0.67417283j]]}
+                         "two spin qubit": [
+                             [-0.55430206 - 0.67417283j, 0.16989756 - 0.23037152j, 0.16989756 - 0.23037152j,
+                              -0.1381539 + 0.23512509j],
+                             [-0.16989756 - 0.23037152j, -0.55430206 + 0.67417283j, -0.1381539 - 0.23512509j,
+                              -0.16989756 - 0.23037152j],
+                             [-0.16989756 - 0.23037152j, -0.1381539 - 0.23512509j, -0.55430206 + 0.67417283j,
+                              -0.16989756 - 0.23037152j],
+                             [-0.1381539 + 0.23512509j, 0.16989756 - 0.23037152j, 0.16989756 - 0.23037152j,
+                              -0.55430206 - 0.67417283j]]}
 
 if __name__ == "__main__":
     plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")

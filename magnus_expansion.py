@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import scipy
-import hermitian_functions
+import hamiltonians
 from scipy import linalg
 from scipy import special
 
