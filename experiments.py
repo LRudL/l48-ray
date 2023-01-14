@@ -1,5 +1,5 @@
 # %%
-from typing import Callable, Union, Any
+from typing import Callable, Union, Any, List
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -31,7 +31,7 @@ DEFAULT_SAVE_PATH = "experiment_data"
 class Experiment:
     def __init__(
             self, name: str,
-            systems,
+            systems: List[hamiltonians.Hamiltonian],
             # different systems to plot
             simulators,
             # independent variable for graph x axis:
@@ -100,13 +100,6 @@ class Experiment:
         return results
 
 
-systems = [
-    hamiltonians.single_spin_qubit_system,
-    hamiltonians.alt_ssq_system,
-    hamiltonians.alt_sin_ssq_system,
-    hamiltonians.two_spin_qubit_system
-]
-
 experiments = [
     Experiment(
         name="truncation omega and dt",
@@ -160,9 +153,10 @@ experiments = [
     Experiment(
         name="pulse mismatch",
         systems=[
-            hamiltonians.Hamiltonian(f'two spin qubit {pulse_name}', hamiltonians.two_spin_qubit_system.H_0, pulse,
-                                     hamiltonians.two_spin_qubit_system.V).at_t for pulse_name, pulse in
-            (('Hann', hamiltonians.hann_pulse),
+            hamiltonians.Hamiltonian(f'two spin qubit-{pulse_name}', hamiltonians.two_spin_qubit_system.H_0, pulse,
+                                     hamiltonians.two_spin_qubit_system.V) for pulse_name, pulse in
+            (('Gaussian', hamiltonians.b_t_shifted),
+             ('Hann', hamiltonians.hann_pulse),
              ('Blackman', hamiltonians.blackman_pulse),
              ('Double Gaussian', hamiltonians.double_gaussian_pulse))
         ],
@@ -170,7 +164,7 @@ experiments = [
             Simulator(
                 name="analytic_magnus",
                 function=analytic_magnus_k,
-                k=[1, 2], segmented=False
+                k=[2], segmented=False
             )
         ],
         indep_var="dt",
@@ -233,10 +227,9 @@ def plot_truncation(experiment, ground_truths, indep_var="dt"):
             else:
                 plt.title("Truncation error over different number of segments: " + system + ", " + simulator)
                 plt.savefig("segmentation truncation error " + system + ", " + simulator + ".png", bbox_inches="tight")
-            plt.show()
 
 
-def plot_convergence(experiment, ground_truths):
+def plot_convergence(experiment, ground_truths, fontsize: float = 13):
     results = experiment.fidelities(ground_truths)
     dts = experiment.indep_var_range
     for simulator in results:
@@ -254,12 +247,29 @@ def plot_convergence(experiment, ground_truths):
                     for dt_res in system_results:
                         fidelities.append(dt_res.get(key))
                     plt.plot(dts, fidelities, label=simulator + " " + key)
-    plt.xlabel("dt")
-    plt.ylabel("fidelity")
+    plt.xlabel(r"$\Delta$t", fontsize=fontsize)
+    plt.ylabel("Fidelity", fontsize=fontsize)
     plt.legend()
     plt.title("Convergence to the ground truth of a system over varying dt")
     plt.savefig("convergence experiment t=0-2", bbox_inches="tight")
-    plt.show()
+
+
+# TODO - prettify plot
+def plot_pulses_mismatch(experiment: Experiment, ground_truths, fontsize: float = 13):
+    results = experiment.fidelities(ground_truths)
+    dts = experiment.indep_var_range
+    for simulator in results:
+        simulator_results = results.get(simulator)
+        for system in simulator_results:
+            pulse_name = system[system.find('-') + 1:]
+            system_results = simulator_results.get(system)
+            fid_per_dt = [list(res.values())[0] for res in system_results]
+
+            plt.plot(dts, fid_per_dt, label=pulse_name)
+
+    plt.xlabel(r"$\Delta$t", fontsize=fontsize)
+    plt.ylabel("Fidelity", fontsize=fontsize)
+    plt.legend()
 
 
 ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 + 0.0876828j],
@@ -290,4 +300,9 @@ ground_truths_shifted = {"single spin qubit": [[-0.3290767 - 0.71904284j, -0.556
                               -0.55430206 - 0.67417283j]]}
 
 if __name__ == "__main__":
-    plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")
+    # TODO - properly generate gt for these systems
+    pulse_mismatch_gt = {system.name: ground_truths_shifted['two spin qubit'] for system in experiments[2].systems}
+    plot_pulses_mismatch(experiments[2], pulse_mismatch_gt)
+    # plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")
+
+    plt.show()
