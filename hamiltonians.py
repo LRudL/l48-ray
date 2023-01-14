@@ -31,7 +31,22 @@ def b_t(t):
 
 
 def b_t_shifted(t):
-    return 0.5 * np.exp(-((t+1) - 2.5) ** 2)
+    return 0.5 * np.exp(-((t + 1) - 2.5) ** 2)
+
+
+def hann_pulse(t, t_f: float = 2):
+    return 0.5 * (1 - np.cos(2 * np.pi * t / t_f))
+
+
+def blackman_pulse(t, t_f: float = 2, alpha: float = 0.16):
+    a0 = (1 - alpha) / 2
+    a1 = 1 / 2
+    a2 = alpha / 2
+    return a0 - a1 * np.cos(2 * np.pi * t / t_f) + a2 * np.cos(4 * np.pi * t / t_f)
+
+
+def double_gaussian_pulse(t, t_f: float = 2):
+    return 0.5 * (np.exp(-(t - t_f / 3) ** 2) + np.exp(-(t - 2 * t_f / 3) ** 2))
 
 
 def sin_t(t):
@@ -64,7 +79,7 @@ two_spin_qubit_system = Hamiltonian("two spin qubit", np.kron(sigma_z, sigma_z),
 tsq_shifted_system = Hamiltonian("two spin qubit", np.kron(sigma_z, sigma_z), b_t_shifted,
                                  np.kron(sigma_x, I_2) + np.kron(I_2, sigma_x))
 
-ssq_shifted_system =  Hamiltonian("single spin qubit", I_2, b_t_shifted, sigma_x)
+ssq_shifted_system = Hamiltonian("single spin qubit", I_2, b_t_shifted, sigma_x)
 
 single_spin_qubit = single_spin_qubit_system.at_t
 two_spin_qubits = two_spin_qubit_system.at_t

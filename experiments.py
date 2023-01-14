@@ -160,7 +160,11 @@ experiments = [
     Experiment(
         name="pulse mismatch",
         systems=[
-            hamiltonians.two_spin_qubit_system
+            hamiltonians.Hamiltonian(f'two spin qubit {pulse_name}', hamiltonians.two_spin_qubit_system.H_0, pulse,
+                                     hamiltonians.two_spin_qubit_system.V).at_t for pulse_name, pulse in
+            (('Hann', hamiltonians.hann_pulse),
+             ('Blackman', hamiltonians.blackman_pulse),
+             ('Double Gaussian', hamiltonians.double_gaussian_pulse))
         ],
         simulators=[
             Simulator(
