@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import hamiltonians
 import utils
 from ground_truth import naive_simulator
-from magnus_expansion import naive_magnus_k, analytic_magnus_k
+from magnus_expansion import naive_magnus_k, analytic_magnus_k, calc_conv_param
 
 
 class Simulator:
@@ -14,7 +14,7 @@ class Simulator:
         self.name = name
         self.kwargs = kwargs
         # requirements on `function``:
-        # - it can take in a hamiltonians.ConstantHermitianFunction 
+        # - it can take in a hamiltonians.Hamiltonian
         #   as a first argument
         # - 
         self.function = function
@@ -168,7 +168,7 @@ experiments = [
             )
         ],
         indep_var="dt",
-        indep_var_range=[1, .9, .8, .7, .6, .5, .4, .3, .2, .1],
+        indep_var_range=np.linspace(1e-2, 1),
         # Pass any variables you want to be passed to all simulators here:
         const_vars={"t_start": 0, "t": 2}
     ),
@@ -272,6 +272,17 @@ def plot_pulses_mismatch(experiment: Experiment, ground_truths, fontsize: float 
     plt.legend()
 
 
+def generate_ground_truth(experiment: Experiment, dt=1e-5) -> dict:
+    ground_truths = {}
+    t_final = experiment.const_vars['t']
+    t_start = experiment.const_vars['t_start']
+    for system in experiment.systems:
+        sys_ground_truth = naive_simulator(system, t_final, t_start, dt)
+        ground_truths[system.name] = sys_ground_truth
+
+    return ground_truths
+
+
 ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 + 0.0876828j],
                                        [-0.19159047 + 0.0876828j, -0.40680456 - 0.88888417j]],
                  "alt sin single spin qubit": [[-0.73582847 - 0.46178757j, -0.30887546 - 0.38717933j],
@@ -300,8 +311,8 @@ ground_truths_shifted = {"single spin qubit": [[-0.3290767 - 0.71904284j, -0.556
                               -0.55430206 - 0.67417283j]]}
 
 if __name__ == "__main__":
-    # TODO - properly generate gt for these systems
-    pulse_mismatch_gt = {system.name: ground_truths_shifted['two spin qubit'] for system in experiments[2].systems}
+    pulse_mismatch_gt = generate_ground_truth(experiments[2])
+    print(pulse_mismatch_gt)
     plot_pulses_mismatch(experiments[2], pulse_mismatch_gt)
     # plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")
 
