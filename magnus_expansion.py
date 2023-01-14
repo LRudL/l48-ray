@@ -289,72 +289,72 @@ naive_magnus_k = arg_broadcast_wrapper(magnus, "k")
 if __name__ == "__main__":
     # print("---Magnus, non-segmented:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=4, k=1, integrator_dt=0.004))
     # print("---Magnus, segmented:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=4, k=1, integrator_dt=0.004, segmented=True))
     # print("---Analytic Magnus:")
     # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system.get_components(),
+    #     hamiltonians.two_spin_qubit_system.get_components(),
     #     t=4, k=2, tstar_dt=0.004,
     #     segmented=False, verbose=True))
     # print("---Analytic Magnus, segmented:")
     # print(analytic_magnus(
-    #     hermitian_functions.two_spin_qubit_system.get_components(),
+    #     hamiltonians.two_spin_qubit_system.get_components(),
     #     t=4, k=2, tstar_dt=0.004,
     #     segmented=True, verbose=True))
     t_f = 5
     print("\n\n---Naive::")
-    print(ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start=0, t=1, dt=0.001))
+    print(ground_truth.naive_simulator(hamiltonians.two_spin_qubit_system, t_start = 0, t=1, dt=0.001))
     # print("\n\n---Magnus, non-segmented, k=1:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=1, k=1, integrator_dt=0.04))
     # print("\n\n---Magnus, non-segmented, k=2:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=1, k=2, integrator_dt=0.04))
     # print("\n\n---Magnus, non-segmented, k=3:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=1, k=3, integrator_dt=0.04))
     # print("\n\n---Magnus, segmented, k=2:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=1, k=2, integrator_dt=0.04, segmented=5))
     # print("\n\n---Magnus, segmented, k=3:")
     # print(magnus(
-    #     hermitian_functions.two_spin_qubit_system.at_t,
+    #     hamiltonians.two_spin_qubit_system.at_t,
     #     t=1, k=3, integrator_dt=0.04, segmented=5))
     print("\n\n---Naive, ground truth::")
-    gt = ground_truth.naive_simulator(hermitian_functions.two_spin_qubit_system, t_start=0, t=t_f, dt=1e-4)
+    gt = ground_truth.naive_simulator(hamiltonians.two_spin_qubit_system, t_start=0, t=t_f, dt=1e-4)
     print(gt)
     print("\n\n---Magnus, non-segmented, k=2:")
-    m_ns_2 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04)
+    m_ns_2 = magnus(hamiltonians.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04)
     print(m_ns_2)
     print("\n\n---Magnus, non-segmented, k=3:")
-    m_ns_3 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04)
+    m_ns_3 = magnus(hamiltonians.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04)
     print(m_ns_3)
     print("\n\n---Magnus, segmented, k=2:")
-    m_s_2 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04, segmented=True)
+    m_s_2 = magnus(hamiltonians.two_spin_qubit_system.at_t, t=t_f, k=2, integrator_dt=0.04, segmented=True)
     print(m_s_2)
     print("\n\n---Magnus, segmented, k=3:")
-    m_s_3 = magnus(hermitian_functions.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04, segmented=True)
+    m_s_3 = magnus(hamiltonians.two_spin_qubit_system.at_t, t=t_f, k=3, integrator_dt=0.04, segmented=True)
     print(m_s_3)
 
     print("---Analytic Magnus, non-segmented, k=2:")
-    am_ns_1 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=1)
+    am_ns_1 = analytic_magnus(hamiltonians.two_spin_qubit_system, t=t_f, k=1)
     print(am_ns_1)
     print("---Analytic Magnus, non-segmented, k=3:")
-    am_ns_2 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=2)
+    am_ns_2 = analytic_magnus(hamiltonians.two_spin_qubit_system, t=t_f, k=2)
     print(am_ns_2)
     print("---Analytic Magnus, segmented, k=1:")
-    am_s_1 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=1, segmented=True)
+    am_s_1 = analytic_magnus(hamiltonians.two_spin_qubit_system, t=t_f, k=1, segmented=True)
     print(am_s_1)
     print("---Analytic Magnus, segmented, k=2:")
-    am_s_2 = analytic_magnus(hermitian_functions.two_spin_qubit_system, t=t_f, k=2, segmented=True)
+    am_s_2 = analytic_magnus(hamiltonians.two_spin_qubit_system, t=t_f, k=2, segmented=True)
     print(am_s_2)
 
     print()
