@@ -72,7 +72,7 @@ def ad(k, Omega, A):
 def segmented_handler(
     callback, t, segment_margin, sample, verbose, force_segment_count = None
 ):
-    max_dt = math.pi / segment_margin / np.linalg.norm(sample, ord='fro')
+    max_dt = math.pi / segment_margin / np.linalg.norm(sample, ord=2)
     if force_segment_count is not None:
         max_dt = t / force_segment_count
     Uts = []
