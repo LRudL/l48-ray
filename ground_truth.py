@@ -55,10 +55,11 @@ def naive_simulation(get_Ht, T, dt):
 
     return U_t, U_ts
 
+
 def naive_simulator(get_Ht, t, t_start, dt):
     if isinstance(get_Ht, hamiltonians.Hamiltonian):
         get_Ht = get_Ht.at_t
     get_Ht_ = get_Ht
     if t_start != 0:
-        get_Ht_ = lambda t : get_Ht(t + t_start)
+        get_Ht_ = lambda t: get_Ht(t + t_start)
     return naive_simulation(get_Ht_, t, dt)[0]

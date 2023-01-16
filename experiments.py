@@ -1,4 +1,5 @@
 # %%
+from copy import deepcopy
 from typing import Callable, Union, Any, List
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import matplotlib.pyplot as plt
 import hamiltonians
 import utils
 from ground_truth import naive_simulator
-from magnus_expansion import naive_magnus_k, analytic_magnus_k
+from magnus_expansion import naive_magnus_k, analytic_magnus_k, calc_conv_param
 
 
 class Simulator:
@@ -14,7 +15,7 @@ class Simulator:
         self.name = name
         self.kwargs = kwargs
         # requirements on `function``:
-        # - it can take in a hamiltonians.Hamiltonian 
+        # - it can take in a hamiltonians.Hamiltonian
         #   as a first argument
         # - 
         self.function = function
@@ -155,7 +156,7 @@ experiments = [
         systems=[
             hamiltonians.Hamiltonian(f'two spin qubit-{pulse_name}', hamiltonians.two_spin_qubit_system.H_0, pulse,
                                      hamiltonians.two_spin_qubit_system.V) for pulse_name, pulse in
-            (('Gaussian', hamiltonians.b_t_shifted),
+            (('Gaussian', lambda t: 0.5 * np.exp(-(t - 1) ** 2)),
              ('Hann', hamiltonians.hann_pulse),
              ('Blackman', hamiltonians.blackman_pulse),
              ('Double Gaussian', hamiltonians.double_gaussian_pulse))
@@ -164,11 +165,11 @@ experiments = [
             Simulator(
                 name="analytic_magnus",
                 function=analytic_magnus_k,
-                k=[2], segmented=False
+                k=[2], segmented=4
             )
         ],
         indep_var="dt",
-        indep_var_range=[1, .9, .8, .7, .6, .5, .4, .3, .2, .1],
+        indep_var_range=np.linspace(1e-2, 1),
         # Pass any variables you want to be passed to all simulators here:
         const_vars={"t_start": 0, "t": 2}
     ),
@@ -272,6 +273,57 @@ def plot_pulses_mismatch(experiment: Experiment, ground_truths, fontsize: float 
     plt.legend()
 
 
+def generate_ground_truth(experiment: Experiment, dt=1e-5) -> dict:
+    ground_truths = {}
+    t_final = experiment.const_vars['t']
+    t_start = experiment.const_vars['t_start']
+    for system in experiment.systems:
+        sys_ground_truth = naive_simulator(system, t_final, t_start, dt)
+        ground_truths[system.name] = sys_ground_truth
+
+    return ground_truths
+
+
+def get_pulse_amp_with_conv_param(system: hamiltonians.Hamiltonian, goal_conv_param: float, t_final: float,
+                                  t_start: float = 0, max_amp: float = 3) -> float:
+    closest_conv_param = np.inf
+    opt_amp = None
+    for amp in np.linspace(0, max_amp):
+        sys_w_diff_amp = deepcopy(system)
+        sys_w_diff_amp.get_vt = lambda t: amp * system.get_vt(t)
+        conv_param = calc_conv_param(sys_w_diff_amp.at_t, t_final, t_start)
+        if abs(conv_param - goal_conv_param) < abs(goal_conv_param - closest_conv_param):
+            closest_conv_param = conv_param
+            opt_amp = amp
+
+    return opt_amp
+
+
+def get_new_vt(system: hamiltonians.Hamiltonian, opt_amp: float) -> callable:
+    def updated_get_vt(t):
+        return opt_amp * system.get_vt(t)
+
+    return updated_get_vt
+
+
+def get_exp_with_conv_param(experiment: Experiment, goal_conv_param: float) -> Experiment:
+    systems = experiment.systems
+    t_final = experiment.const_vars['t']
+    t_start = experiment.const_vars['t_start']
+
+    corrected_systems = []
+    for system in systems:
+        opt_amp = get_pulse_amp_with_conv_param(system, goal_conv_param, t_final, t_start)
+
+        corrected_sys = hamiltonians.Hamiltonian(system.name, system.H_0, get_new_vt(system, opt_amp), system.V)
+
+        corrected_systems.append(corrected_sys)
+
+    experiment = deepcopy(experiment)
+    experiment.systems = corrected_systems
+    return experiment
+
+
 ground_truths = {"single spin qubit": [[-0.40680456 - 0.88888417j, -0.19159047 + 0.0876828j],
                                        [-0.19159047 + 0.0876828j, -0.40680456 - 0.88888417j]],
                  "alt sin single spin qubit": [[-0.73582847 - 0.46178757j, -0.30887546 - 0.38717933j],
@@ -300,9 +352,10 @@ ground_truths_shifted = {"single spin qubit": [[-0.3290767 - 0.71904284j, -0.556
                               -0.55430206 - 0.67417283j]]}
 
 if __name__ == "__main__":
-    # TODO - properly generate gt for these systems
-    pulse_mismatch_gt = {system.name: ground_truths_shifted['two spin qubit'] for system in experiments[2].systems}
-    plot_pulses_mismatch(experiments[2], pulse_mismatch_gt)
+    exp = get_exp_with_conv_param(experiments[2], goal_conv_param=0.75)
+
+    pulse_mismatch_gt = generate_ground_truth(exp)
+    plot_pulses_mismatch(exp, pulse_mismatch_gt)
     # plot_truncation(experiments[1], ground_truths_shifted, indep_var="segmented")
 
     plt.show()
